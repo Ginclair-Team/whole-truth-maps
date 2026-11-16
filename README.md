@@ -2,6 +2,8 @@
 
 By [Ginhouse](https://ginclair.com/ginhouse).
 
+![Whole Truth Map poster: Kolkata by day on the left, at dusk on the right](assets/poster.png)
+
 A map that tells you the truth about a city, and then the whole truth. This first edition is Kolkata, drawn as a zoomable isometric pixel-art map. Every place carries two readings:
 
 - **The truth** is the checkable part: dates, names, numbers.

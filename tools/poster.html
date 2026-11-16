@@ -1,0 +1,119 @@
+<!doctype html>
+<!-- Poster source. Rendered to assets/poster.png by a headless browser at 1860x2480 (see README). -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Whole Truth Map poster</title>
+<style>
+@font-face { font-family: "Press Start 2P"; src: url("../fonts/press-start-2p.woff2") format("woff2"); }
+@font-face { font-family: "Pixelify Sans"; font-weight: 400; src: url("../fonts/pixelify-400.woff2") format("woff2"); }
+@font-face { font-family: "Pixelify Sans"; font-weight: 700; src: url("../fonts/pixelify-700.woff2") format("woff2"); }
+:root { --enamel: #1d4f91; --plate: #f4f2ea; --cab: #f6c417; --black: #1a1712; --sindoor: #c8102e; --W: 1860px; --H: 2480px; --split: 930px; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: var(--W); height: var(--H); overflow: hidden; background: #000; }
+body { font-family: "Pixelify Sans", sans-serif; -webkit-font-smoothing: none; }
+
+/* Two full-size posters stacked; each is clipped to its own half, so everything that crosses
+   the centre line (title, map) changes voice exactly at the split. */
+.side { position: absolute; inset: 0; overflow: hidden; }
+.truth { clip-path: inset(0 calc(var(--W) - var(--split)) 0 0); background: linear-gradient(#8fbbd8 0%, #cfd6c8 38%, #f0c9a0 62%, #eab384 100%); color: var(--enamel); }
+.whole { clip-path: inset(0 0 0 var(--split)); background: linear-gradient(#100c28 0%, #241a4a 40%, #46295a 70%, #5a2f58 100%); color: var(--cab); }
+
+.title { position: absolute; left: 0; right: 0; top: 196px; text-align: center; font-family: "Press Start 2P", monospace; font-size: 106px; line-height: 1; letter-spacing: 2px; white-space: nowrap; }
+.truth .title { text-shadow: 7px 8px 0 var(--plate); }
+.whole .title { text-shadow: 7px 8px 0 var(--black); }
+.city { position: absolute; left: 0; right: 0; top: 348px; text-align: center; font-size: 76px; font-weight: 700; line-height: 1; }
+.city span { font-family: "Nirmala UI", "Noto Sans Bengali", sans-serif; font-size: 70px; margin-left: 30px; }
+
+.claim { position: absolute; top: 486px; width: 640px; font-size: 50px; line-height: 1.16; font-weight: 700; }
+.truth .claim { right: calc(var(--W) - var(--split) + 54px); text-align: right; color: #14233a; }
+.whole .claim { left: calc(var(--split) + 54px); color: var(--plate); }
+
+canvas { position: absolute; left: 130px; top: 590px; image-rendering: pixelated; }
+
+/* the seam */
+.seam { position: absolute; left: calc(var(--split) - 4px); top: 0; width: 8px; height: 100%; background: repeating-linear-gradient(var(--plate) 0 24px, transparent 24px 48px); opacity: .9; }
+
+/* the two sample cards */
+.card { position: absolute; top: 1716px; width: 700px; }
+.nameplate { left: 170px; background: var(--plate); color: #14233a; border: 6px solid var(--enamel); border-radius: 12px 12px 0 0; box-shadow: 12px 14px 0 #0f2c52; padding-bottom: 34px; }
+.nameplate .plate { margin: 14px; padding: 26px 24px 24px; background: var(--enamel); color: var(--plate); border-radius: 9px; text-align: center; box-shadow: inset 0 0 0 5px var(--enamel), inset 0 0 0 9px var(--plate); }
+.nameplate .bn { font-family: "Nirmala UI", "Noto Sans Bengali", sans-serif; font-size: 42px; font-weight: 700; line-height: 1.2; }
+.nameplate h2 { font-size: 48px; line-height: 1.1; }
+.nameplate p.line { padding: 20px 34px 0; font-size: 35px; line-height: 1.32; }
+.facts { display: flex; margin: 26px 34px 0; border-top: 4px solid var(--enamel); padding-top: 16px; }
+.facts div { flex: 1; }
+.facts b { display: block; font-size: 46px; line-height: 1; color: var(--enamel); white-space: nowrap; }
+.facts div:nth-child(2) { flex: 1.25; }
+.facts span { font-size: 27px; }
+
+.cabdoor { left: 990px; background: var(--cab); color: var(--black); border: 6px solid var(--black); box-shadow: 12px 14px 0 #0c0a14; padding-bottom: 34px; }
+.cabdoor .stencil { padding: 30px 34px 22px; border-bottom: 16px solid var(--black); }
+.cabdoor h2 { font-size: 50px; line-height: 1.05; }
+.cabdoor .sub { font-family: "Press Start 2P", monospace; font-size: 19px; margin-top: 16px; }
+.cabdoor p.line { padding: 22px 34px 0; font-size: 35px; line-height: 1.32; }
+.genz { margin: 28px 34px 0; padding: 20px 26px 22px; background: var(--black); color: var(--cab); font-size: 36px; font-weight: 700; line-height: 1.26; }
+
+.label { position: absolute; top: 1630px; font-family: "Press Start 2P", monospace; font-size: 26px; }
+.truth .label { left: 170px; color: var(--enamel); }
+.whole .label { left: 990px; color: var(--cab); }
+
+.foot { position: absolute; bottom: 74px; font-size: 38px; line-height: 1.25; font-weight: 700; }
+.truth .foot { left: 170px; color: #14233a; }
+.whole .foot { right: 170px; text-align: right; color: var(--plate); }
+.foot small { display: block; font-size: 30px; font-weight: 400; opacity: .85; }
+</style>
+</head>
+<body>
+
+<section class="side truth">
+  <h1 class="title">Whole Truth Map</h1>
+  <p class="city">Kolkata<span lang="bn">কলকাতা</span></p>
+  <p class="claim">The truth is what the plaque says.</p>
+  <canvas id="day"></canvas>
+  <p class="label">The truth</p>
+  <div class="foot">One city, two readings<small>A pixel map drawn entirely in code</small></div>
+</section>
+
+<section class="side whole">
+  <h1 class="title">Whole Truth Map</h1>
+  <p class="city">Kolkata<span lang="bn">কলকাতা</span></p>
+  <p class="claim">The whole truth is what the city does there.</p>
+  <canvas id="night"></canvas>
+  <p class="label">The whole truth</p>
+  <div class="foot">by Ginhouse<small>ginclair.com/ginhouse</small></div>
+</section>
+
+<div class="seam"></div>
+
+<article class="card nameplate">
+  <div class="plate"><p class="bn" lang="bn">রবীন্দ্র সেতু</p><h2>Howrah Bridge</h2></div>
+  <p class="line">A steel cantilever bridge opened in 1943, riveted together without a single nut or bolt.</p>
+  <div class="facts"><div><b>1943</b><span>opened</span></div><div><b>26,500 t</b><span>of steel</span></div><div><b>0</b><span>nuts and bolts</span></div></div>
+</article>
+
+<article class="card cabdoor">
+  <div class="stencil"><h2>Howrah Bridge</h2><p class="sub">The whole truth</p></div>
+  <p class="line">Nobody here calls it Rabindra Setu. The best view is from the ferry deck at sunset, cha in hand.</p>
+  <p class="genz">The ferry is the cheapest cruise in India and I will not be taking questions.</p>
+</article>
+
+<script src="../js/engine.js"></script>
+<script src="../js/layout.js"></script>
+<script src="../js/data.js"></script>
+<script src="../js/city.js"></script>
+<script>
+(function () {
+  const E = PK.E;
+  PK.city.build();
+  const blit = (id, buf) => {
+    const c = document.getElementById(id); c.width = E.W; c.height = E.H;
+    c.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(buf.buffer.slice(0)), E.W, E.H), 0, 0);
+  };
+  blit('day', E.col);
+  blit('night', E.makeNight(E.finalizeLights()));
+  document.title = 'ready';
+})();
+</script>
+</body>
+</html>
