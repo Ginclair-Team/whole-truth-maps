@@ -203,7 +203,7 @@
       whole: {
         line: 'Officially five days, in practice a season: outfits planned from July, routes drawn up like campaigns, anjali at eight on no sleep. This year carries a weight. On 17 October 2026, nineteen people died in a crush at the Chorbagan pandal, not far from here. The city still loves this more than anything, and is asking out loud how many people one lane should hold. Bagbazar does it the old way, on open ground, with one frame and one idol.',
         genz: 'We will always come back for Ma. We just want everyone to get home.',
-        meters: m(5, 5, 5), tags: ['pujo asche', 'one frame, one idol', 'go early, go slow'],
+        meters: m(5, 3, 4), tags: ['pujo asche', 'one frame, one idol', 'go early, go slow'],
       },
     },
     {
