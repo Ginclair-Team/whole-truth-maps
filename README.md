@@ -39,7 +39,7 @@ There are no image files. The city is drawn by code each time the page loads (ab
 
 All text lives in `js/data.js`. Each place has `truth` (a line plus fact chips) and `whole` (a line, a quote, three 1 to 5 meters, tags). Move a pin by changing `at: [i, j]`, the cell on the 120 x 96 grid.
 
-Before publishing, have someone who knows the city check `js/data.js`. The truth lines are meant to be verifiable and should be verified. The whole-truth lines are opinion and will date quickly.
+Recent news and the main dates were checked against published sources in November 2026. A few older dates were not individually verified, so have someone who knows the city read the file before publishing. The whole-truth lines are opinion and will date quickly.
 
 ## Change the art
 
@@ -60,4 +60,4 @@ This writes `tools/out/day.png` and `tools/out/night.png`. Pass `x y w h scale` 
 
 Concept and production: Ginhouse, [ginclair.com/ginhouse](https://ginclair.com/ginhouse).
 
-Inspired by Pixel Chennai (pixelchennai.com) by RC. No artwork from that project is used. Fonts: Pixelify Sans and Press Start 2P (SIL Open Font License), bundled in `fonts/`.
+Inspired by Pixel Chennai (pixelchennai.com) by RC. No artwork from that project is used. Fonts: Jersey 15 and Press Start 2P (SIL Open Font License), bundled in `fonts/`.
