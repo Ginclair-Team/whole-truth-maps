@@ -46,6 +46,18 @@
   }
   const openF = (base) => (a, t) => (t === 0 || a % 7 === 0 ? base : C('#2a211c'));
 
+  /* ---------- sightline shields: cap the filler floors in front (south / east) of landmarks ---------- */
+  const LOW = [];
+  function shield(i0, j0, i1, j1, cap) { LOW.push([i0, j0, i1, j1, cap]); }
+  function capAt(i, j, w, d) { let c = 99; for (let k = 0; k < LOW.length; k++) { const z = LOW[k]; if (i < z[2] && i + w > z[0] && j < z[3] && j + d > z[1] && z[4] < c) c = z[4]; } return c; }
+  // halo around a landmark footprint: walls face +j and +i, so the shield reaches further that way
+  function halo(i0, j0, i1, j1, a, o) {
+    o = o || {};
+    const lat = o.lat == null ? 1 : o.lat, near = o.near == null ? 2.5 : o.near, far = o.far == null ? 5 : o.far;
+    shield(i0 - lat, j0 - lat, i1 + far, j1 + far, o.c2 == null ? 2 : o.c2);
+    shield(i0 - lat, j0 - lat, i1 + near, j1 + near, a);
+  }
+  const AVK = [3, 6, 7, 3, 6, 1, 5, 0, 3, 6];
   function ground(i, j, w, d, t) { gRect(i, j, w, d, t); claim(i, j, w, d); }
   function claimFn(i0, j0, i1, j1, fn) {
     for (let b = Math.max(0, Math.floor(j0)); b < Math.min(GH, Math.ceil(j1)); b++)
@@ -163,8 +175,12 @@
   }
   function building(i, j, w, d, s, r, o) {
     o = o || {};
-    const base = C(pick(r, s.cols)), fl = Math.min(o.cap || 99, s.fl[0] + ri(r, s.fl[1] - s.fl[0] + 1));
+    const base = C(pick(r, s.cols)), capF = Math.min(o.cap || 99, capAt(i, j, w, d));
+    let fl = s.fl[0] + ri(r, s.fl[1] - s.fl[0] + 1);
+    if (!s.glass && !s.shed && w * d <= 2) fl = Math.min(fl, w * d === 1 ? 2 : 3);   // skinny 1x1 / 1x2 slabs stay low
+    if (capF < 99) fl = Math.min(fl, Math.max(1, capF));
     const shop = r() < (o.shopP != null ? o.shopP : s.shopP), aw = pick(r, AW), seed = (i * 7 + j * 13) & 255;
+    if (shop && w * d <= 2 && !s.glass && !s.shed) fl = Math.min(fl, w * d === 1 ? 1 : 2);   // 1x2: 2 floors + shop
     const h = s.shed ? 7 + ri(r, 6) : fl * 6 + 2 + (shop ? 5 : 0);
     const winc = s.shut ? C(pick(r, s.shut)) : s.glass ? sh(base, 0.5) : s.shed ? BLK : undefined;
     const cw = s.cw || (r() < 0.3 ? 5 : 4);
@@ -213,17 +229,30 @@
     if (s.chim) for (let n = 0; n < s.chim; n++) {
       for (let tries = 0; tries < 30; tries++) {
         const i = i0 + ri(r, Math.max(1, i1 - i0)), j = j0 + ri(r, Math.max(1, j1 - j0));
-        if (fr(i, j, 1, 1)) { claim(i, j, 1, 1); chimney(i + 0.05, j + 0.05, 34 + ri(r, 12), BRICK); break; }
+        if (fr(i, j, 1, 1) && capAt(i, j, 1, 1) > 50) { claim(i, j, 1, 1); chimney(i + 0.05, j + 0.05, 34 + ri(r, 12), BRICK); break; }
       }
     }
     for (let j = j0; j < j1; j++) for (let i = i0; i < i1; i++) {
       if (!fr(i, j, 1, 1)) continue;
       const nr = RD[j * GW + i - 1] || RD[j * GW + i + 1] || RD[(j - 1) * GW + i] || RD[(j + 1) * GW + i];
-      if (r() < (nr ? 0.2 : o.treeP || 0.1)) { treeCell(i, j, r, !nr && r() < 0.4); continue; }
+      const cap = capAt(i, j, 1, 1);
+      if (cap <= 0) {   // garden in front of a landmark
+        gRect(i, j, 1, 1, T.LAWN); claim(i, j, 1, 1);
+        const u = r();
+        if (u < 0.45) tree(i, j, 4, i * 3 + j); else if (u < 0.6) person(i + r(), j + r(), pick(r, PCOL));
+        continue;
+      }
+      if (nr && !o.noav && r() < ((i + j) % 2 === 0 ? 0.92 : 0.4)) {   // avenue tree on the kerb
+        tree(i, j, cap <= 1 ? pick(r, [0, 3, 6]) : AVK[ri(r, AVK.length)], i * 29 + j * 13); claim(i, j, 1, 1); continue;
+      }
+      if (r() < (nr ? 0.05 : o.treeP || 0.1)) { treeCell(i, j, r, !nr && r() < 0.4); continue; }
       let w = 1 + Math.max(ri(r, s.mw), ri(r, s.mw)), d = 1 + Math.max(ri(r, s.md), ri(r, s.md));
       if (s.minw) { w = Math.max(w, s.minw); d = Math.max(d, s.minw); }
       while (w > 1 && !fr(i, j, w, d)) w--;
       while (d > 1 && !fr(i, j, w, d)) d--;
+      if (w * d === 1 && !s.shed && r() < 0.85) {   // prefer 2x1 / 2x2 over skinny 1x1 slabs
+        if (fr(i, j, 2, 2)) { w = 2; d = 2; } else if (fr(i, j, 2, 1)) w = 2; else if (fr(i, j, 1, 2)) d = 2;
+      } else if (w * d === 2 && !s.shed && r() < 0.5 && fr(i, j, 2, 2)) { w = 2; d = 2; }
       const low = !s.glass && !s.shed && (RD[j * GW + i - 1] || RD[(j - 1) * GW + i]);
       building(i, j, w, d, s, r, low ? Object.assign({ cap: 2 }, o) : o);
     }
@@ -240,6 +269,29 @@
       if (rd.id === 'chitpur') { road(rd.axis, rd.at, rd.from, rd.tramTo, rd.w, true); road(rd.axis, rd.at, rd.tramTo, rd.to, rd.w, false); }
       else road(rd.axis, rd.at, rd.from, rd.to, rd.w, !!rd.tram);
     }
+  }
+
+  function sightlines() {
+    shield(20, 30, 34, 44, 1); shield(20, 30, 38, 47, 2);                         // Howrah Bridge east end
+    shield(7, 27, 17, 38, 1); shield(2, 34, 14, 41, 1);                            // Howrah station frontage
+    halo(53, 27, 67, 31.2, 1, { near: 2.5, far: 4.5, lat: 2 });                    // Writers' Building
+    halo(67, 27, 70, 32.5, 1, { near: 3, far: 5 });                                // St Andrew's
+    halo(50, 34, 54, 39, 1, { near: 3, far: 5, lat: 1.5 });                        // GPO
+    shield(55, 41, 66, 47, 2); shield(65, 32, 71, 44, 2);                          // Lal Dighi
+    shield(72, 24, 84, 41, 0); shield(70, 22, 92, 46, 2);                          // Raj Bhavan grounds
+    halo(75.5, 41.5, 78, 43.5, 1, { near: 3, far: 6 });                            // Shaheed Minar
+    halo(84, 29.8, 92.2, 36, 1, { near: 2, far: 4 });                              // New Market clock tower
+    halo(37, 27, 44, 32, 1, { near: 3, far: 6, lat: 1.5 });                        // Nakhoda Masjid
+    halo(31, 7, 41, 15.1, 1, { near: 3, far: 6, lat: 1.5 });                       // Jorasanko
+    halo(51, 3, 58, 6, 1, { near: 3, far: 5 });                                    // Presidency
+    halo(53, 12, 57, 15, 1, { near: 3, far: 5, lat: 1.5 });                        // Coffee House
+    shield(75, 13, 92, 19, 1); shield(73, 13, 95, 23, 2); shield(91, 9, 96, 14, 1); // Sealdah frontage
+    shield(101, 16, 118, 23, 1); shield(115, 3, 121, 23, 2); shield(114, 4, 119, 18, 1); // Bagbazar pandal
+    halo(14, 76, 18, 78.5, 1, { near: 3, far: 6, lat: 1.5 });                      // Prinsep Ghat
+    halo(33, 76, 38, 81, 1, { near: 3, far: 7, lat: 1.5 });                        // Kalighat
+    halo(99.5, 56, 104, 60, 1, { near: 3, far: 6, lat: 1.5 });                     // Park Circus mosque
+    shield(86, 49, 95, 66, 2);                                                     // east of St Paul's / Planetarium
+    shield(97, 73, 120, 76, 2); shield(110, 74, 119, 90, 1);                       // east of Science City
   }
 
   function structures() {
@@ -507,8 +559,8 @@
     // Nakhoda Masjid
     const rs = C('#b5523c');
     B(37, 27, 7, 5, 10, rs, { cw: 4, win: C('#e8d9b5'), band: C('#d8b090'), cornice: C('#d8b090'), litP: 3 });
-    drum(40.5, 29.5, 10, 1.6, 2, C('#c9a07a'), C('#c9a07a'));
-    dome(40.5, 29.5, 12, 1.6, 9, C('#2f8f5a'), { rib: 3 });
+    drum(40.5, 29.5, 10, 1.4, 2, C('#c9a07a'), C('#c9a07a'));
+    dome(40.5, 29.5, 12, 1.3, 15, C('#2f8f5a'), { rib: 3 });
     minaret(37.2, 31.2, 36, rs, C('#2f8f5a')); minaret(42.7, 31.2, 36, rs, C('#2f8f5a'));
     stalls(25, 25, 47, 47, r, { p: 0.18, rs: 3 });
     fill(25, 25, 47, 47, 'burra', r);
@@ -527,7 +579,7 @@
     for (let k = 0; k < 14; k++) if (k < 5 || k > 8) { pt(53.5 + k, 29.85, 14, WH, 0.3); pt(53.5 + k, 29.85, 15, WH, 0.3); }
     // GPO
     B(50, 34, 4, 5, 12, WH, { cw: 4, win: C('#7a8a96'), cornice: WH, band: C('#e8e0d0'), litP: 3 });
-    drum(52, 36.5, 12, 1.6, 5, WH, WH); dome(52, 36.5, 17, 1.6, 10, WH, { rib: 4 }); line3([52, 36.5, 27], [52, 36.5, 31], GOLD, 0.2);
+    drum(52, 36.5, 12, 1.3, 4, WH, WH); dome(52, 36.5, 16, 1.3, 15, WH, { rib: 4 }); line3([52, 36.5, 31], [52, 36.5, 34], GOLD, 0.2);
     // St Andrew's
     B(67, 27, 2.6, 4.2, 9, WH, { cw: 4, ww: 1, wh: 4, win: C('#7a8a96'), litP: 0 });
     gable(67, 27, 2.6, 4.2, 4, 9, true, C('#8a8f9a'));
@@ -540,11 +592,26 @@
   }
 
   function r2c4(r) {
-    ground(74, 26, 8, 7, T.LAWN);
-    const cr = C('#f1e6c8');
-    B(75.5, 28, 5, 3, 9, cr, { cw: 4, win: C('#7a8a96'), band: WH, cornice: WH, litP: 3 });
-    drum(78, 29.5, 9, 0.8, 2, WH, WH); dome(78, 29.5, 11, 0.9, 6, WH);
-    for (let k = 0; k < 8; k++) tree(74 + k, 26, 0, k), tree(74 + k, 32, 3, k + 4);
+    // Raj Bhavan: central block with portico, columns and dome, two wings, lawns and trees
+    ground(73, 25, 11, 15, T.LAWN); ground(78.55, 32.4, 1.5, 7.6, T.REDPATH);
+    const cr = C('#f1e6c8'), rbo = { cw: 4, win: C('#56687a'), band: WH, cornice: WH, litP: 3, plinth: sh(cr, 0.88) };
+    B(74.2, 28.4, 2.6, 2.6, 9, cr, rbo); B(81.2, 28.4, 2.6, 2.6, 9, cr, rbo);
+    B(76.8, 27.6, 4.4, 3.6, 12, cr, Object.assign({}, rbo, { rh: 6 }));
+    B(77.6, 31.2, 2.8, 0.9, 8, WH, { mats: pairM(() => colM(WH, { ch: 7, per: 3, dark: C('#6a6660'), cornice: WH })), roof: WH, nc: 1 });
+    gable(77.6, 31.2, 2.8, 0.9, 3, 8, true, WH);
+    box(77.3, 32.1, 3.4, 0.4, 1, 0, WH, WH, sh(WH, 0.72), { ns: 1 });
+    drum(79, 29.4, 12, 1.0, 2, WH, WH);
+    domeX(79, 29.4, 14, 1.0, 11, [WH, C('#e2d9c0'), C('#b8ae98')], { gores: 16 });
+    line3([79, 29.4, 25], [79, 29.4, 29], GOLD, 0.2);
+    for (let k = 0; k < 7; k++) glow(77.8 + k * 0.4, 32.3, 5, C('#ffdf80'));
+    for (let k = 0; k < 10; k++) { const a = k / 10 * Math.PI * 2; glow(79 + Math.cos(a) * 0.95, 29.4 + Math.sin(a) * 0.95, 14.5, C('#ffe9a8')); }
+    for (const [i, j] of [[78.2, 33.8], [80.4, 33.8], [78.2, 37.6], [80.4, 37.6]]) lamp(i, j);
+    ring(79.3, 36.2, 0.55, WH, 14); ring(79.3, 36.2, 0.3, C('#9fc9e4'), 8);
+    for (let k = 74; k < 84; k++) tree(k, 25, k & 1 ? 3 : 0, k);
+    for (let j = 28; j < 40; j += 2) { tree(73, j, j % 4 ? 0 : 6, j); if (j > 32) tree(83, j + 1, (j & 2) ? 3 : 0, j + 3); }
+    for (let k = 74; k < 84; k += 2) if (k < 78 || k > 79) tree(k, 38, k % 4 ? 6 : 3, k + 9);
+    for (const [i, j, kd] of [[75, 34, 1], [82, 35, 7], [76, 36.5, 6], [82.5, 37.5, 0], [75.5, 31.5, 4], [83, 31.5, 4]]) tree(i, j, kd, i * 3 + j);
+    tree(77.6, 38.9, 5, 3); tree(80.4, 38.9, 5, 4);
     ground(74, 40, 5, 5, T.GRASS);
     const mx = 76.5, mj = 42.5;
     drum(mx, mj, 0, 0.85, 5, WH, WH); drum(mx, mj, 5, 0.45, 17, WH, WH);
@@ -607,16 +674,30 @@
   function r3c1(r) {
     gRect(12, 49, 11, 22, T.GRASS);
     groundFn(10, 49, 15, 71, (i, j) => (i > L.eb(j) + 0.1 && i < L.eb(j) + 1.3 ? T.PLAZA : 0));
-    const FC = [17.5, 59.5], ks = 0.78;
-    const rho = (i, j) => { const di = i - FC[0], dj = j - FC[1]; return Math.hypot(di, dj) / (1 + 0.22 * Math.cos(5 * Math.atan2(dj, di))) / ks; };
-    const ft = (i, j) => { if (i <= L.eb(j) + 0.2 || i >= 23) return 0; const p = rho(i, j); return p < 4.3 ? T.LAWN : p < 4.9 ? T.BRICK : p < 5.6 ? T.MOAT : 0; };
-    groundFn(11, 52, 24, 67, ft);
-    for (const [i, j, w, d] of [[15.9, 57.4, 1.5, 0.8], [18, 57.4, 1.5, 0.8], [15.9, 61.0, 1.5, 0.8], [18, 61.0, 1.5, 0.8]]) {
+    // Fort William: octagonal body with 8 sharp bastions (triangular radial function), brick rampart, moat, grass inside
+    const FC = [17.8, 59.5], FA = 4.95, FB = 7.7;
+    const tri = (x) => { const f = x - Math.floor(x); return f < 0.5 ? f * 2 : 2 - f * 2; };
+    const fs = (i, j) => { const di = (i - FC[0]) / FA, dj = (j - FC[1]) / FB, th = Math.atan2(dj, di); return Math.hypot(di, dj) / (0.76 + 0.24 * tri(th * 8 / (2 * Math.PI))); };
+    const ft = (i, j) => { if (i <= L.eb(j) + 0.2 || i >= 22.9) return 0; const p = fs(i, j); return p < 0.74 ? T.LAWN : p < 0.87 ? T.BRICK : p < 1.0 ? T.POND : 0; };
+    groundFn(11, 50, 24, 69, ft);
+    // claim every cell that touches the moat or walls so no tree or building lands on them
+    for (let b = 50; b < 69; b++) for (let a = 11; a < 24; a++) {
+      for (const [da, db] of [[0.1, 0.1], [0.9, 0.1], [0.1, 0.9], [0.9, 0.9], [0.5, 0.5]]) if (fs(a + da, b + db) < 1.04) { OCC[b * GW + a] = 1; break; }
+    }
+    // rampart parapet along the outer edge of the brick ring
+    for (let b = 50 * 4; b < 69 * 4; b++) for (let a = 11 * 4; a < 24 * 4; a++) {
+      const i = (a + 0.5) / 4, j = (b + 0.5) / 4;
+      if (i <= L.eb(j) + 0.2 || i >= 22.9) continue;
+      const p = fs(i, j);
+      if (p >= 0.80 && p < 0.87) box(a / 4, b / 4, 0.25, 0.25, 3, 0, sh(BRICK, 1.12), sh(BRICK, 1.0), sh(BRICK, 0.74), { ns: 1, ng: 1 });
+    }
+    for (const [i, j, w, d] of [[16.2, 57.3, 1.2, 0.7], [18.4, 57.3, 1.2, 0.7], [16.2, 61.2, 1.2, 0.7], [18.4, 61.2, 1.2, 0.7]]) {
+      if ([[i, j], [i + w, j], [i, j + d], [i + w, j + d]].some(([a, b]) => fs(a, b) > 0.66)) continue;
       B(i, j, w, d, 3, C('#f1e6c8'), { mats: [C('#e8dcc0'), C('#b8ac90')], roof: null, nc: 1 });
       gable(i, j, w, d, 3, 3, false, C('#b8402e'));
     }
-    line3([17.5, 59.5, 0], [17.5, 59.5, 24], C('#e9e2d0'), 0.15);
-    for (let k = 0; k < 3; k++) for (let q = 0; q < 3; q++) pt(17.5 + (q + 1) * 0.125, 59.5, 23 - k, [C('#f08a24'), C('#f1ead8'), C('#2f8f5a')][k], 0.2);
+    line3([FC[0], FC[1], 0], [FC[0], FC[1], 24], C('#e9e2d0'), 0.15);
+    for (let k = 0; k < 3; k++) for (let q = 0; q < 3; q++) pt(FC[0] + (q + 1) * 0.125, FC[1], 23 - k, [C('#f08a24'), C('#f1ead8'), C('#2f8f5a')][k], 0.2);
     for (let j = 50; j < 70; j += 2.5) { const i = L.eb(j) + 1.1; lamp(i, j); }
     for (let k = 0; k < 8; k++) person(L.eb(50 + k * 2.5) + 0.5 + r() * 0.5, 50 + k * 2.4, pick(r, PCOL), 0, 0.5);
     vehicle('ship', 7, 62.5, 0, 'j');
@@ -710,7 +791,7 @@
   function r3c4(r) {
     gRect(73, 49, 14, 22, T.GRASS);
     ground(74.6, 50.6, 3.8, 3.8, T.PLAZA);
-    drum(76.5, 52.5, 0, 1.5, 6, WH, WH); dome(76.5, 52.5, 6, 1.5, 4, WH); line3([76.5, 52.5, 10], [76.5, 52.5, 16], GOLD, 0.2);
+    drum(76.5, 52.5, 0, 1.4, 4, WH, WH); domeX(76.5, 52.5, 4, 1.4, 15, [WH, C('#e3ddcc'), C('#b9b2a0')], { gores: 18 }); line3([76.5, 52.5, 19], [76.5, 52.5, 23], GOLD, 0.2);
     B(77.4, 55, 5.6, 2, 10, WH, { cw: 4, ww: 1, wh: 4, win: C('#7a8a96'), litP: 0, band: C('#e0dac8') });
     gable(77.4, 55, 5.6, 2, 4, 10, false, C('#a8a090'));
     churchSpire(75.9, 55, 1.5, 1.5, 22, 14, WH, C('#cfd2d6'));
@@ -732,7 +813,7 @@
     for (let k = 0; k < 16; k++) {
       const i = 98.5 + r() * 8, j = 49.5 + r() * 4.5, g = C(['#a8a8a0', '#bdb7ab', '#8e8e88'][k % 3]);
       if (k % 3 === 0) { stack(i, j, 0.4, 0.4, 10 + ri(r, 4), 0, (t) => 0.1 * t, sh(g, 1.1), g, sh(g, 0.7)); }
-      else { box(i, j, 0.8, 0.8, 3, 0, g, sh(g, 1.05), sh(g, 0.72), { ns: 1 }); dome(i + 0.4, j + 0.4, 3, 0.45, 3, g); }
+      else { box(i, j, 0.8, 0.8, 3, 0, g, sh(g, 1.05), sh(g, 0.72), { ns: 1 }); dome(i + 0.4, j + 0.4, 3, 0.45, 5, g); }
     }
     for (let b = 49; b < 55; b++) for (let a = 98; a < 107; a++) if ((a + b) % 3 === 0) { tree(a, b, (a + b) % 2 ? 5 : 1, a * 3 + b); }
     // roundabout
@@ -743,7 +824,7 @@
     tree(107, 61, 1, 3); tree(106, 60, 3, 4);
     // mosque
     B(99.5, 56.2, 4.5, 3.8, 8, WH, { cw: 4, ww: 1, wh: 4, win: C('#3f8f6a'), band: C('#e0dac8'), litP: 3 });
-    drum(101.75, 58.1, 8, 1.2, 2, C('#e0dac8'), C('#e0dac8')); dome(101.75, 58.1, 10, 1.3, 8, C('#2f8f5a'), { rib: 3 });
+    drum(101.75, 58.1, 8, 1.1, 2, C('#e0dac8'), C('#e0dac8')); dome(101.75, 58.1, 10, 1.1, 13, C('#2f8f5a'), { rib: 3 });
     minaret(99.5, 59.2, 28, WH, C('#2f8f5a')); minaret(103.2, 59.2, 28, WH, C('#2f8f5a'));
     // biryani lane
     [101, 104.1, 108.3, 111.3].forEach((ci, k) => {
@@ -806,7 +887,7 @@
     groundFn(49, 76, 71, 95, (i, j) => (!L.inLake(i, j) && near(i, j) ? T.REDPATH : 0));
     gDisc(60, 86, 2.3, 1.7, T.GRASS);
     for (const [i, j, k] of [[58, 85, 0], [61, 86, 1], [62, 84, 7], [58, 87, 3]]) tree(i, j, k, i + j);
-    B(59.6, 85.2, 1.4, 1.0, 5, WH, { mats: [WH, sh(WH, 0.72)], roof: WH, nc: 1 }); dome(60.3, 85.7, 5, 0.5, 4, WH);
+    B(59.6, 85.2, 1.4, 1.0, 5, WH, { mats: [WH, sh(WH, 0.72)], roof: WH, nc: 1 }); dome(60.3, 85.7, 5, 0.5, 6, WH);
     box(59.8, 80.2, 0.4, 4.5, 1, 0, WOOD, C('#8a6a43'), C('#6a4a32'), { ns: 1 });
     B(56.3, 77.2, 3, 2.4, 6, CREAM, { cw: 4, win: C('#6a4a38'), band: sh(CREAM, 0.85), litP: 2, roof: C('#b23a34') });
     box(58.2, 79.6, 0.6, 2.6, 1, 0, WOOD, C('#8a6a43'), C('#6a4a32'), { ns: 1 });
@@ -827,19 +908,103 @@
     fill(73, 73, 95, 96, 'garia', r);
   }
 
+  /* A true ellipsoidal dome (horizontal radius r cells, vertical hh px) with gore stripes, per-pixel shaded.
+     pal = [colourA, colourB]; stripes alternate by azimuth. Used where the engine's flat dome would read as a bowl. */
+  function domeX(ci, cj, z, r, hh, pal, o) {
+    if (E.S.dry) return;
+    o = o || {};
+    const cx = Math.round(sx(ci, cj)), cy = Math.round(sy(ci, cj, z)), rx = Math.max(1, Math.round(r * 11.3)), ry = rx / 2, dc = ci + cj;
+    const n = o.gores || 20, rib = o.rib, hi = o.hi || WH, shd = [1.1, 1.0, 0.86, 0.72];
+    for (let dx = -rx; dx < rx; dx++) {
+      const p = (dx + 0.5) / rx, s2 = 1 - p * p, s = Math.sqrt(s2), qs = -ry * s / Math.sqrt(ry * ry + hh * hh);
+      const yTop = Math.ceil(qs * ry - hh * Math.sqrt(Math.max(0, s2 - qs * qs)) - 0.5), yBot = Math.ceil(s * ry - 0.5) - 1;
+      for (let dy = yTop; dy <= yBot; dy++) {
+        const yv = dy + 0.5;
+        let lo = qs, hi2 = s;
+        for (let it = 0; it < 22; it++) { const m = (lo + hi2) / 2, yy = m * ry - hh * Math.sqrt(Math.max(0, s2 - m * m)); if (yy < yv) lo = m; else hi2 = m; }
+        const q = (lo + hi2) / 2, w = Math.sqrt(Math.max(0, s2 - q * q));
+        const Ls = -0.6 * p - 0.42 * q + 0.55 * w;
+        const ang = (Math.atan2(q, p) / (2 * Math.PI) + 1) * n, gi = Math.floor(ang), fr = ang - gi;
+        let c = pal[gi & 1];
+        const lv = Ls > 0.5 ? 0 : Ls > 0.18 ? 1 : Ls > -0.15 ? 2 : 3;
+        c = sh(c, shd[lv]);
+        if (w < 0.9 && (fr < 0.1 || (rib && fr > 0.92))) c = sh(pal[2] || pal[1], lv < 2 ? 0.9 : 0.72);
+        if (w < 0.1) c = sh(pal[1], 0.7);
+        put3(cx + dx, cy + dy, c, dc + q * ry / QH + 0.06);
+      }
+    }
+    // highlights
+    const hx = cx - Math.round(rx * 0.38), hy = cy - Math.round(hh * 0.62);
+    put3(hx, hy, hi, dc + 0.4); put3(hx + 1, hy, hi, dc + 0.4); put3(hx - 1, hy + 1, hi, dc + 0.4); put3(hx, hy + 1, sh(hi, 0.97), dc + 0.4);
+    put3(cx - Math.round(rx * 0.2), cy - Math.round(hh * 0.86), hi, dc + 0.4);
+  }
+  const QH = E.QH;
+  function put3(x, y, c, d) { E.putS(x, y, c, d); }
+  // Space Theatre dino
+  const DINO = [
+    '..............ggg....',
+    '.............ggggg...',
+    '.............gkgggg..',
+    '.............ggggggg.',
+    '.............gggg.gg.',
+    '............ggggggg..',
+    '...........gggg......',
+    '..........ggggg.g....',
+    '....gggggggggggggg...',
+    '..gggggggggggggggg...',
+    '.ggggdddddddgggggg...',
+    'gggdddddddddddggg....',
+    '.gg..dddd...ggg.gg...',
+    '.....gg.gg..gg..gg...',
+    '....ggg.ggg.ggg.ggg..',
+  ];
+
   function r4c5(r) {
     ground(99, 75, 12, 13, T.LAWN);
     ground(100.5, 77, 7, 7, T.PLAZA);
-    drum(104, 80, 0, 2, 5, C('#e8eef2'), C('#e8eef2')); dome(104, 80, 5, 2, 12, C('#cfe3f2'), { rib: 5 });
+    // Space Theatre: white-and-pale-blue gored dome on a drum
+    const dw = C('#f4f8fb'), db = C('#b4d3ea'), dr = C('#8fb6d4');
+    drum(104, 80, 0, 2, 5, dw, (a, t, h) => (t === 0 ? db : t === h - 1 ? sh(db, 0.9) : (a >> 2) & 1 ? C('#e6eef4') : dw));
+    domeX(104, 80, 5, 2, 22, [dw, db, dr], { gores: 20, hi: C('#ffffff') });
+    box(103.85, 79.85, 0.3, 0.3, 3, 27, db, dw, sh(db, 0.8), { ns: 1, ng: 1 });
+    // striped cylinder (Science Centre)
     const st = (a) => ((a >> 1) & 1 ? C('#f1ead8') : C('#2f8f9a'));
     drum(101.5, 85, 0, 1.4, 9, C('#f1ead8'), (a, t, h) => st(a));
-    for (let k = 0; k < 8; k++) { const tt = k / 7, i = 104 + k * 0.9, j = 84 + Math.sin(tt * Math.PI) * -1.2 + 1.2; B(i, j, 1, 1.6, 5, C('#e8eef2'), { mats: [C('#e8eef2'), C('#b9c7d0')], roof: C('#cfe3f2') }); }
-    stamp(108, 78, 0, ['..ggg.', '.gggg.', 'ggggg.', 'g.gg..', '..gggg', '.gg..g'], { g: C('#3f9a4a') }, 0.4);
-    const top = 24;
-    for (const [i, j] of [[99.5, 87.3], [105, 81.6], [110.3, 76.2]]) box(i - 0.1, j - 0.1, 0.2, 0.2, top, 0, STEEL, STEEL, STEELD, { ns: 1 });
-    line3([99.5, 87.3, top], [105, 81.6, top - 2], C('#2a2a30'), 0.2); line3([105, 81.6, top - 2], [110.3, 76.2, top], C('#2a2a30'), 0.2);
-    for (const [i, j, c] of [[102.3, 84.4, '#d8302a'], [107.6, 78.9, '#f4c531']]) { line3([i, j, top - 1], [i, j, top - 5], C('#2a2a30'), 0.2); box(i - 0.2, j - 0.2, 0.4, 0.4, 3, top - 9, C(c), sh(C(c), 0.9), sh(C(c), 0.7), { ns: 1 }); }
-    fill(111, 75, 115, 85, 'modern', r, { nolanes: true });
+    drum(101.5, 85, 9, 1.4, 1, C('#2f8f9a'), C('#2f8f9a'));
+    // curved convention block
+    const cvm = () => wallM(C('#e8eef2'), { cw: 3, ww: 2, wh: 3, wy: 1, rh: 7, win: C('#6fa6cc'), litP: 2, band: C('#c6d6e0') });
+    for (let k = 0; k < 8; k++) { const tt = k / 7, i = 104 + k * 0.9, j = 84 + Math.sin(tt * Math.PI) * -1.2 + 1.2; B(i, j, 1, 1.6, 7, C('#e8eef2'), { mats: pairM(cvm), roof: C('#cfe3f2') }); }
+    // green dinosaur
+    stamp(108.4, 79.6, 0, DINO, { g: C('#3f9a4a'), d: C('#2c7a3a'), k: C('#1a1a1a') }, 0.4);
+    // ropeway: three pylons, gently sagging thin grey cable, coloured gondolas
+    const PYL = [[99.6, 75.9, 24], [105.4, 75.7, 30], [111, 75.5, 24]], cab = C('#aab4bc'), cab2 = C('#4c555e');
+    const cz = (t, k) => { const a = PYL[k], b = PYL[k + 1]; return [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2] - 1, b[2] - 1, t) - 3.6 * Math.sin(Math.PI * t)]; };
+    for (const [i, j, h] of PYL) {
+      box(i - 0.09, j - 0.09, 0.18, 0.18, h, 0, STEEL, STEEL, STEELD, { ns: 1 });
+      box(i - 0.09, j - 0.42, 0.18, 0.84, 1, h - 1, STEELD, STEELD, STEELD, { ns: 1, ng: 1 });
+    }
+    for (let k = 0; k < 2; k++) for (let s = 0; s < 24; s++) {
+      const a = cz(s / 24, k), b = cz((s + 1) / 24, k);
+      line3(a, b, cab, 0.3); line3([a[0], a[1] + 0.06, a[2] - 1], [b[0], b[1] + 0.06, b[2] - 1], cab2, 0.3);
+    }
+    for (const [k, t, c] of [[0, 0.3, '#d8302a'], [0, 0.78, '#2f6fb5'], [1, 0.45, '#f4c531']]) {
+      const g = cz(t, k);
+      line3([g[0], g[1], g[2]], [g[0], g[1], g[2] - 5], cab2, 0.35);
+      box(g[0] - 0.2, g[1] - 0.2, 0.4, 0.4, 4, g[2] - 9, sh(C(c), 1.15), C(c), sh(C(c), 0.7), { ns: 1, ng: 1 });
+    }
+    for (let k = 0; k < 14; k++) { const a = k / 14 * Math.PI * 2; glow(104 + Math.cos(a) * 1.95, 80 + Math.sin(a) * 1.95, 5.5, C('#bfe4ff')); }
+    for (const [i, j] of PYL) glow(i, j, PYL[0][2] === 24 ? 32 : 32, C('#ff6a5a'));
+    for (const [k, t, c] of [[0, 0.3, '#ff7a6a'], [0, 0.78, '#7ab4ff'], [1, 0.45, '#ffe08a']]) { const g = cz(t, k); glow(g[0], g[1], g[2] - 7, C(c)); }
+    for (let k = 0; k < 8; k++) glow(104.2 + k * 0.9, 85.6 + Math.sin(k / 7 * Math.PI) * -1.2, 8, C('#d8f0ff'));
+    for (const [i, j] of [[100.4, 84.6], [107.4, 86.6], [100.4, 78], [108.6, 82.6]]) lamp(i, j);
+    // low garden and trees in front
+    ground(99.5, 86.4, 11, 1.3, T.FLOWER);
+    for (let k = 0; k < 11; k++) if (k % 2 === 0) tree(99.5 + k, 87, 4, k);
+    for (const [i, j, kd] of [[99.2, 87.6, 6], [110.2, 87.6, 3], [110.2, 83.2, 0], [99.2, 80.5, 3], [99.3, 76.5, 6], [102.2, 87.6, 0], [107.4, 87.6, 6]]) tree(i, j, kd, i + j);
+    // two shorter glass towers in the far north-east corner of the district
+    const gw = (b) => pairM(() => wallM(b, { cw: 3, ww: 2, wh: 4, wy: 1, rh: 6, win: sh(b, 0.45), litP: 2, band: sh(b, 0.9) }));
+    B(113.4, 72.6, 2.8, 2.8, 40, C('#6fa8c9'), { mats: gw(C('#6fa8c9')), roof: C('#9fc4d6') });
+    B(116, 74.3, 2.2, 2.2, 34, C('#8fc2c9'), { mats: gw(C('#8fc2c9')), roof: C('#b4d6da') });
     // wetlands
     gRect(97, 88, 19, 8, T.GRASS); claim(97, 88, 20, 8);
     for (let a = 0; a < 4; a++) for (let b = 0; b < 2; b++) {
@@ -856,6 +1021,7 @@
 
   const STEPS = [
     ['Laying tram tracks', baseGround],
+    ['Checking sightlines', sightlines],
     ['Raising the Howrah Bridge', structures],
     ['Moulding clay idols in Kumartuli', r1c1],
     ['Dusting off Thakur Bari', r1c2],
@@ -880,7 +1046,7 @@
     ['Laying the earth beneath', slab],
   ];
 
-  function reset() { E.col.fill(0); E.dep.fill(-1e9); E.G.fill(0); E.SHD.fill(0); OCC.fill(0); RD.fill(0); E.lights.length = 0; }
+  function reset() { E.col.fill(0); E.dep.fill(-1e9); E.G.fill(0); E.SHD.fill(0); OCC.fill(0); RD.fill(0); E.lights.length = 0; LOW.length = 0; }
   const runStep = (k) => STEPS[k][1](E.rng(9000 + k * 131));
 
   function build() {
@@ -888,7 +1054,7 @@
     E.S.dry = true;
     try { for (let k = 0; k < STEPS.length; k++) runStep(k); } finally { E.S.dry = false; }
     E.renderGround();
-    OCC.fill(0);
+    OCC.fill(0); LOW.length = 0;
     for (let k = 0; k < STEPS.length; k++) runStep(k);
     return PK.city;
   }
@@ -905,7 +1071,7 @@
             if (onProgress) onProgress((pass * N + k + 1) / (2 * N), STEPS[k][0]);
             k++; setTimeout(tick, 0);
           } else if (pass === 0) {
-            E.S.dry = false; E.renderGround(); OCC.fill(0); pass = 1; k = 0; setTimeout(tick, 0);
+            E.S.dry = false; E.renderGround(); OCC.fill(0); LOW.length = 0; pass = 1; k = 0; setTimeout(tick, 0);
           } else resolve(PK.city);
         } catch (e) { E.S.dry = false; reject(e); }
       };

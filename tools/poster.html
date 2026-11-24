@@ -6,12 +6,11 @@
 <title>Whole Truth Map poster</title>
 <style>
 @font-face { font-family: "Press Start 2P"; src: url("../fonts/press-start-2p.woff2") format("woff2"); }
-@font-face { font-family: "Pixelify Sans"; font-weight: 400; src: url("../fonts/pixelify-400.woff2") format("woff2"); }
-@font-face { font-family: "Pixelify Sans"; font-weight: 700; src: url("../fonts/pixelify-700.woff2") format("woff2"); }
+@font-face { font-family: "Jersey 15"; font-weight: 400 700; src: url("../fonts/jersey-15.woff2"); size-adjust: 116%; }
 :root { --enamel: #1d4f91; --plate: #f4f2ea; --cab: #f6c417; --black: #1a1712; --sindoor: #c8102e; --W: 1860px; --H: 2480px; --split: 930px; }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { width: var(--W); height: var(--H); overflow: hidden; background: #000; }
-body { font-family: "Pixelify Sans", sans-serif; -webkit-font-smoothing: none; }
+body { font-family: "Jersey 15", sans-serif; -webkit-font-smoothing: none; }
 
 /* Two full-size posters stacked; each is clipped to its own half, so everything that crosses
    the centre line (title, map) changes voice exactly at the split. */
@@ -29,7 +28,7 @@ body { font-family: "Pixelify Sans", sans-serif; -webkit-font-smoothing: none; }
 .truth .claim { right: calc(var(--W) - var(--split) + 54px); text-align: right; color: #14233a; }
 .whole .claim { left: calc(var(--split) + 54px); color: var(--plate); }
 
-canvas { position: absolute; left: 130px; top: 590px; image-rendering: pixelated; }
+canvas { position: absolute; left: 66px; top: 590px; image-rendering: pixelated; }
 
 /* the seam */
 .seam { position: absolute; left: calc(var(--split) - 4px); top: 0; width: 8px; height: 100%; background: repeating-linear-gradient(var(--plate) 0 24px, transparent 24px 48px); opacity: .9; }
@@ -62,13 +61,18 @@ canvas { position: absolute; left: 130px; top: 590px; image-rendering: pixelated
 .truth .foot { left: 170px; color: #14233a; }
 .whole .foot { right: 170px; text-align: right; color: var(--plate); }
 .foot small { display: block; font-size: 30px; font-weight: 400; opacity: .85; }
+/* city name: English ends at the seam, Bengali begins after it */
+.truth .city { right: calc(var(--W) - var(--split) + 40px); left: auto; text-align: right; }
+.whole .city { left: calc(var(--split) + 40px); right: auto; text-align: left; }
+.city span { margin-left: 0; }
+.truth .claim, .whole .claim { text-wrap: balance; }
 </style>
 </head>
 <body>
 
 <section class="side truth">
   <h1 class="title">Whole Truth Map</h1>
-  <p class="city">Kolkata<span lang="bn">কলকাতা</span></p>
+  <p class="city">Kolkata</p>
   <p class="claim">The truth is what the plaque says.</p>
   <canvas id="day"></canvas>
   <p class="label">The truth</p>
@@ -77,7 +81,7 @@ canvas { position: absolute; left: 130px; top: 590px; image-rendering: pixelated
 
 <section class="side whole">
   <h1 class="title">Whole Truth Map</h1>
-  <p class="city">Kolkata<span lang="bn">কলকাতা</span></p>
+  <p class="city"><span lang="bn">কলকাতা</span></p>
   <p class="claim">The whole truth is what the city does there.</p>
   <canvas id="night"></canvas>
   <p class="label">The whole truth</p>

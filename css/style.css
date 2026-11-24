@@ -4,8 +4,7 @@
    the whole truth  = yellow-cab stencil (street level, unofficial) */
 
 @font-face { font-family: "Press Start 2P"; src: url("../fonts/press-start-2p.woff2") format("woff2"); font-display: swap; }
-@font-face { font-family: "Pixelify Sans"; font-weight: 400; src: url("../fonts/pixelify-400.woff2") format("woff2"); font-display: swap; }
-@font-face { font-family: "Pixelify Sans"; font-weight: 700; src: url("../fonts/pixelify-700.woff2") format("woff2"); font-display: swap; }
+@font-face { font-family: "Jersey 15"; font-weight: 400 700; src: url("../fonts/jersey-15.woff2") format("woff2"); font-display: swap; size-adjust: 116%; }
 
 :root {
   --enamel: #1d4f91;
@@ -16,8 +15,8 @@
   --sindoor: #c8102e;
   --dusk: #231b40;
 
-  --ui: "Pixelify Sans", "Trebuchet MS", sans-serif;
-  --mark: "Press Start 2P", "Pixelify Sans", monospace;
+  --ui: "Jersey 15", "Trebuchet MS", sans-serif;
+  --mark: "Press Start 2P", "Jersey 15", monospace;
   --bn: "Noto Sans Bengali", "Nirmala UI", "Vrinda", "Shonar Bangla", sans-serif;
 
   /* chrome follows the mode */
@@ -188,7 +187,7 @@ html[data-mode="truth"] .face-whole, html[data-mode="whole"] .face-truth { displ
 .stencil { padding: 16px 18px 12px; border-bottom: 8px solid var(--cab-black); }
 .stencil-name { font-size: 26px; font-weight: 700; line-height: 1.05; text-wrap: balance; }
 .stencil-sub { font-family: var(--mark); font-size: 10px; margin-top: 9px; letter-spacing: .5px; }
-.recap { padding: 10px 18px 0; font-size: 15px; line-height: 1.3; opacity: .8; }
+.recap { padding: 10px 18px 0; font-size: 19px; line-height: 1.25; opacity: .88; } /* below 19px this font's 6 reads as 8 */
 .recap span:first-child { font-weight: 700; }
 .whole-line { padding: 8px 18px 0; font-size: 19px; line-height: 1.38; text-wrap: pretty; }
 .genz {

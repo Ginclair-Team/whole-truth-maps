@@ -44,7 +44,7 @@
         facts: [['1854', 'first train'], ['1905', 'present building'], ['23', 'platforms']],
       },
       whole: {
-        line: 'Since March 2024 the metro runs under the Hooghly from here, the first under-river metro in India. People rode it just to say they had been under the river, and the crossing is over before you finish the sentence. Upstairs it is still coolies in red, cha in clay cups and somebody sprinting for the 8:15.',
+        line: 'Since March 2024 the metro runs under the Hooghly from here, the first under-river metro in India. People rode it just to say they had been under the river. In August 2025 the last gap closed, so the same train now carries on to Sealdah and Salt Lake, and the novelty has become a commute. Upstairs it is still coolies in red, cha in clay cups and somebody sprinting for the 8:15.',
         genz: 'Took the underwater metro for the plot. The plot lasted about 45 seconds.',
         meters: m(4, 5, 3), tags: ['underwater metro', 'bhaar-er cha', 'platform sprint'],
       },
@@ -66,7 +66,7 @@
       id: 'bbd-bagh', name: 'BBD Bagh and Writers\' Building', bn: 'বিবাদী বাগ', area: H, at: [60, 28.5], z: 18, zoom: 3.2,
       keywords: 'dalhousie square lal dighi gpo office para writers',
       truth: {
-        line: 'Named for Benoy, Badal and Dinesh, the three revolutionaries who stormed Writers\' Building in 1930. The building itself dates to 1777 and housed the state secretariat until it moved out in 2013.',
+        line: 'Named for Benoy, Badal and Dinesh, the three revolutionaries who stormed Writers\' Building in 1930. The building itself dates to 1777 and housed the state secretariat until 2013. In May 2026 a new government said it would move back once the building is restored.',
         facts: [['1777', 'Writers\' Building'], ['1868', 'General Post Office'], ['1930', 'the corridor battle']],
       },
       whole: {
@@ -105,13 +105,13 @@
       id: 'tram', name: 'The tram', bn: 'ট্রাম', area: H, at: [80, 47.6], z: 8, zoom: 4.5,
       keywords: 'tramways ctc heritage esplanade gariahat',
       truth: {
-        line: 'Horse-drawn trams first ran here in 1873 and electric ones in 1902, the first in Asia. In 2024 the state announced it would withdraw trams from the streets, keeping a short heritage stretch.',
-        facts: [['1873', 'first horse tram'], ['1902', 'went electric'], ['2024', 'phase-out announced']],
+        line: 'Horse-drawn trams first ran here in 1873 and electric ones in 1902, the first in Asia. In 2024 the state said it would withdraw them. In September 2026 a new state government ordered a study on reviving and extending the network.',
+        facts: [['1873', 'first horse tram'], ['1902', 'went electric'], ['2026', 'revival study ordered']],
       },
       whole: {
-        line: 'The announcement turned the tram from the slow option into a cause. Farewell rides, petitions, a court case, tram lovers keeping count of every working car. It was never about getting anywhere fast. It was about the bell, the wooden seats and a city that agreed to move at 15 km an hour.',
-        genz: 'Slow travel before slow travel was a thing. Save the tram.',
-        meters: m(5, 2, 5), tags: ['save the tram', 'ting ting', 'window seat'],
+        line: 'The 2024 announcement turned the tram from the slow option into a cause: farewell rides, petitions, a long court case, tram lovers counting every working car. Now there is talk of bringing it back, and nobody is celebrating until a bell rings. It was never about getting anywhere fast. It was about the bell, the wooden seats and a city that agreed to move at 15 km an hour.',
+        genz: 'We already said goodbye twice. If it comes back I am not getting off.',
+        meters: m(5, 2, 5), tags: ['comeback?', 'ting ting', 'window seat'],
       },
     },
     {
@@ -200,17 +200,17 @@
         facts: [['1919', 'first held'], ['2021', 'UNESCO recognition'], ['5 days', 'officially']],
       },
       whole: {
-        line: 'Officially five days, in practice a season. Outfits are planned from July, pandal-hopping routes are drawn up like military campaigns, and the plan is always to stay out till four and somehow be up for anjali at eight. Theme pandals compete for the longest queue. Bagbazar just does it the old way and wins anyway.',
-        genz: 'Four nights, five outfits, zero sleep. The countdown starts the day it ends.',
-        meters: m(5, 5, 5), tags: ['pujo asche', 'pandal hopping', 'phuchka at 2 am'],
+        line: 'Officially five days, in practice a season: outfits planned from July, routes drawn up like campaigns, anjali at eight on no sleep. This year carries a weight. On 17 October 2026, nineteen people died in a crush at the Chorbagan pandal, not far from here. The city still loves this more than anything, and is asking out loud how many people one lane should hold. Bagbazar does it the old way, on open ground, with one frame and one idol.',
+        genz: 'We will always come back for Ma. We just want everyone to get home.',
+        meters: m(5, 5, 5), tags: ['pujo asche', 'one frame, one idol', 'go early, go slow'],
       },
     },
     {
       id: 'nakhoda', name: 'Nakhoda Masjid', bn: 'নাখোদা মসজিদ', area: N, at: [38.5, 28.5], z: 26, zoom: 3.8,
       keywords: 'mosque zakaria street ramzan iftar chitpur',
       truth: {
-        line: 'The city\'s principal mosque, completed in 1926 in red sandstone and modelled on Akbar\'s tomb at Sikandra. It can hold about 10,000 worshippers.',
-        facts: [['1926', 'completed'], ['10,000', 'capacity']],
+        line: 'The city\'s principal mosque, begun in 1926 in red sandstone and modelled on Akbar\'s tomb at Sikandra. It can hold about 10,000 worshippers.',
+        facts: [['1926', 'foundation laid'], ['10,000', 'capacity']],
       },
       whole: {
         line: 'During Ramzan the lane outside, Zakaria Street, becomes the best food walk in eastern India: haleem, kebabs, sewai, queues at midnight. Half the crowd is there for iftar and half for the reel, and the stall owners feed both without judgment.',
