@@ -1,14 +1,19 @@
-/* Whole Truth Map - offline renderer.
-   node tools/render.js                      -> tools/out/day.png + night.png
-   node tools/render.js x y w h scale [night] -> tools/out/crop.png (nearest-neighbour upscaled) */
+/* Whole Truth Maps - offline renderer.
+   node tools/render.js <city>                        -> tools/out/<city>-day.png + <city>-night.png (add "alpha" for a transparent background)
+   node tools/render.js <city> x y w h scale [night] [name] -> tools/out/<name>.png, nearest-neighbour upscaled */
 'use strict';
 const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
 
-require('../js/engine.js');
-require('../js/layout.js');
-require('../js/city.js');
+const cityId = process.argv[2];
+if (!['kolkata', 'bengaluru'].includes(cityId)) { console.error('Usage: node tools/render.js kolkata|bengaluru [x y w h scale [night] [name]]'); process.exit(1); }
+process.argv.splice(2, 1);
+const alpha = process.argv[2] === 'alpha';
+require(`../${cityId}/config.js`);
+require('../shared/engine.js');
+require(`../${cityId}/layout.js`);
+require(`../${cityId}/city.js`);
 const PK = globalThis.PK;
 const E = PK.E;
 
@@ -27,7 +32,7 @@ function png(w, h, rgba) { // rgba: Buffer w*h*4
   const ihdr = Buffer.alloc(13); ihdr.writeUInt32BE(w, 0); ihdr.writeUInt32BE(h, 4); ihdr[8] = 8; ihdr[9] = 6;
   return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk('IHDR', ihdr), chunk('IDAT', zlib.deflateSync(raw, { level: 6 })), chunk('IEND', Buffer.alloc(0))]);
 }
-const BG = E.C('#2b2a3a');
+const BG = alpha ? 0 : E.C('#2b2a3a');
 function toBuf(src) { // Uint32 ABGR(LE) -> RGBA bytes, unpainted = dark background
   const out = new Uint32Array(src.length);
   for (let k = 0; k < src.length; k++) out[k] = src[k] ? src[k] : BG;
@@ -58,7 +63,7 @@ if (args.length >= 5 && args.every((v, i) => i >= 5 || !isNaN(v))) {
   fs.writeFileSync(path.join(outDir, name + '.png'), png(w * s, h * s, crop(src, E.W, x, y, w, h, s)));
   console.log('wrote ' + name + '.png ' + w * s + 'x' + h * s);
 } else {
-  fs.writeFileSync(path.join(outDir, 'day.png'), png(E.W, E.H, day));
-  fs.writeFileSync(path.join(outDir, 'night.png'), png(E.W, E.H, toBuf(E.makeNight(E.finalizeLights()))));
-  console.log('wrote day.png night.png');
+  fs.writeFileSync(path.join(outDir, cityId + '-day.png'), png(E.W, E.H, day));
+  fs.writeFileSync(path.join(outDir, cityId + '-night.png'), png(E.W, E.H, toBuf(E.makeNight(E.finalizeLights()))));
+  console.log('wrote ' + cityId + '-day.png and ' + cityId + '-night.png');
 }

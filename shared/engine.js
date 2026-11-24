@@ -1,10 +1,11 @@
-/* Whole Truth Map — software isometric pixel rasteriser.
+/* Whole Truth Maps: software isometric pixel rasteriser, shared by every city.
    Pure JS (no DOM) so the same code runs in the browser and in tools/render.js.
    Everything is drawn into a colour buffer + depth buffer, so draw order never matters
    and animated sprites can be hidden behind buildings. */
 (function (root) {
   'use strict';
   const PK = (root.PK = root.PK || {});
+  const TH = PK.theme || {};   // per-city palette overrides, set in <city>/config.js
 
   const HW = 8, QH = 4;            // half tile width, quarter tile height (tile = 16x8)
   const GW = 120, GH = 96;         // world size in cells (5x4 districts of 24 cells)
@@ -144,7 +145,7 @@
       flo4: '#5d9a45', brick: '#bb7560', brickD: '#a96652', moat: '#4f7d62', sand: '#e2cf9c', dgrass: '#4f8140',
       dgrassD: '#437236', shadow: '#33294d',
     };
-    for (const k in d) GC[k] = C(d[k]);
+    for (const k in d) GC[k] = C((TH.ground && TH.ground[k]) || d[k]);
   }
   initGC();
 
@@ -407,6 +408,8 @@
     LEAF.b = mk('#27573a', '#377a3f', '#5b9c47');
     LEAF.o = mk('#3e7a2f', '#5d9a38', '#8dbb4a');
     LEAF.p = mk('#2d6b46', '#3f8a4e', '#63ac5a');
+    LEAF.tab = mk('#c9508c', '#f07fb4', '#ffb3d4');   // tabebuia rosea
+    LEAF.jac = mk('#5c45a8', '#8463cf', '#b095ea');   // jacaranda
     LEAF.trunk = C('#6b4a33'); LEAF.red = C('#e2452f'); LEAF.yel = C('#f4c531'); LEAF.pink = C('#e48fb0');
   }
   initLeaf();
@@ -422,7 +425,8 @@
       put(cx + dx, cy + dy, c, d);
     }
   }
-  // kinds: 0 round, 1 banyan, 2 palm, 3 krishnachura (red), 4 bush, 5 debdaru (tall), 6 radhachura (yellow), 7 big round
+  // kinds: 0 round, 1 banyan, 2 palm, 3 gulmohar / krishnachura (red), 4 bush, 5 tall (debdaru, silver oak), 6 copperpod / radhachura (yellow), 7 rain tree,
+  // 8 tabebuia (pink), 9 jacaranda (violet)
   function tree(i, j, kind, seed) {
     seed = seed | 0;
     if (S.dry) { const r = kind === 1 ? 0.7 : kind === 4 ? 0.2 : 0.4; shadow(i + 0.5 - r * 0.2, j + 0.5 - r, r * 0.8, r * 2 - 0.25, kind === 1 ? 9 : 6); return; }
@@ -444,7 +448,7 @@
     }
     const big = kind === 7, rx = big ? 5 : 3 + (n % 2), ry = big ? 5 : 3 + ((n >> 2) % 2);
     rect(x, y - 3, 1, 4, LEAF.trunk, d);
-    const cs = kind === 3 || kind === 6 ? LEAF.o : (n >> 4) % 2 ? LEAF.g : LEAF.p;
+    const cs = kind === 8 ? LEAF.tab : kind === 9 ? LEAF.jac : kind === 3 || kind === 6 ? LEAF.o : (n >> 4) % 2 ? LEAF.g : LEAF.p;
     blob(x, y - 3 - ry, rx, ry, cs, d, seed, kind === 3 ? LEAF.red : kind === 6 ? LEAF.yel : 0);
   }
 
@@ -454,7 +458,7 @@
     const d = { taxi: '#f6c417', taxiD: '#c9950c', glass: '#2a3550', tyre: '#26222b', tramB: '#2b62ab', tramW: '#f1efe4', tramR: '#d8dbe0',
       busR: '#c8382e', busB: '#2f6fc0', busY: '#f0c63a', autoG: '#2f8f4f', white: '#f2efe6', hull: '#6d4a32', hullD: '#4f3524', thatch: '#c9a55a',
       ferryW: '#f0ece0', ferryB: '#2b5c9c', ferryR: '#b9382d', emuG: '#3f8a52', emuY: '#e8c94a', metro: '#e9edf2', metroB: '#3a66b0', ship: '#39424f', shipR: '#a8402f' };
-    for (const k in d) VC[k] = C(d[k]);
+    for (const k in d) VC[k] = C((TH.vehicles && TH.vehicles[k]) || d[k]);
   }
   initVC();
   // generic two-part vehicle: body + cabin, length L along axis, width Wd
@@ -489,7 +493,7 @@
         break;
       }
       case 'train': {
-        const top = variant === 1 ? v.metro : v.emuY, b = variant === 1 ? v.metroB : v.emuG;
+        const tv = variant === 1 ? [v.metro, v.metroB] : variant, top = tv ? tv[0] : v.emuY, b = tv ? tv[1] : v.emuG;   // variant = [body, stripe]
         for (let k = -1; k <= 1; k++) {
           const f = (a, t) => (t === 6 ? v.tyre : t >= 1 && t <= 2 ? ((a % 3) ? v.glass : top) : t === 4 ? b : top);
           if (axis === 'i') vbox(i + k * 2.1, j, z, axis, 2.0, 0.55, 7, sh(top, 0.95), f); else vbox(i, j + k * 2.1, z, axis, 2.0, 0.55, 7, sh(top, 0.95), f);
@@ -515,6 +519,21 @@
         vbox(i - o[0], j - o[1], z + 13, axis, 0.4, 0.4, 4, v.shipR, () => v.shipR);
         const cc = [C('#c8553a'), C('#3f7fb5'), C('#e0b23c'), C('#4d9a6a')];
         for (let k = 0; k < 4; k++) { const q = -0.6 + k * 0.85; vbox(i + (axis === 'i' ? q : 0), j + (axis === 'i' ? 0 : q), z + 5, axis, 0.75, 0.9, 3, cc[k], () => sh(cc[k], 0.85)); }
+        break;
+      }
+      case 'scooter': { // delivery rider; variant = box colour
+        const bc = variant || C('#ff7a1f');
+        vbox(i, j, z, axis, 0.5, 0.16, 2, C('#3a3846'), (a, t) => (t === 1 ? v.tyre : C('#4a4858')));
+        person(i, j, bc, z + 3, 0.35);
+        if (axis === 'i') vbox(i - 0.2, j, z + 2, axis, 0.22, 0.24, 3, bc, () => sh(bc, 0.85)); else vbox(i, j - 0.2, z + 2, axis, 0.22, 0.24, 3, bc, () => sh(bc, 0.85));
+        break;
+      }
+      case 'pedal': { // pedal boat
+        const bc = variant || C('#f4f1e6');
+        vbox(i, j, z, axis, 0.8, 0.5, 2, bc, () => sh(bc, 0.82));
+        const hx = axis === 'i' ? i + 0.4 : i, hy = axis === 'i' ? j : j + 0.4;
+        vbox(hx, hy, z + 2, axis, 0.14, 0.14, 4, bc, () => sh(bc, 0.9));
+        person(i - 0.05, j - 0.05, C('#e2452f'), z + 2, 0.3); person(i + 0.15, j + 0.1, C('#2f66b0'), z + 2, 0.3);
         break;
       }
       case 'shell': { // rowing shell
@@ -547,13 +566,16 @@
     return out;
   }
   // Dusk version of the static layer: cool tint + warm glowing lights.
+  // dusk tint: [r, luma, +] [g, luma, +] [b, luma, +]
+  const N = TH.dusk || [0.34, 0.08, 14, 0.36, 0.08, 12, 0.52, 0.14, 38];
+  const NS = TH.duskSprite || [0.46, 16, 0.48, 14, 0.6, 40];   // same for moving sprites: r, +, g, +, b, +
   function makeNight(litList) {
     const out = new Uint32Array(W * H);
     for (let k = 0; k < W * H; k++) {
       const c = col[k]; if (!c) continue;
       const r = c & 255, g = (c >> 8) & 255, b = (c >> 16) & 255;
       const l = (r * 0.3 + g * 0.5 + b * 0.2);
-      const nr = (r * 0.34 + l * 0.08 + 14) | 0, ng = (g * 0.36 + l * 0.08 + 12) | 0, nb = Math.min(255, (b * 0.52 + l * 0.14 + 38) | 0);
+      const nr = Math.max(0, (r * N[0] + l * N[1] + N[2]) | 0), ng = Math.max(0, (g * N[3] + l * N[4] + N[5]) | 0), nb = Math.min(255, (b * N[6] + l * N[7] + N[8]) | 0);
       out[k] = (0xff000000 | (nb << 16) | (ng << 8) | nr) >>> 0;
     }
     const glow = (k, c, t) => { if (out[k]) out[k] = mixc(out[k], c, t); };
@@ -566,7 +588,7 @@
   }
   function nightTint(c) {
     const r = c & 255, g = (c >> 8) & 255, b = (c >> 16) & 255;
-    return (0xff000000 | (Math.min(255, (b * 0.6 + 40) | 0) << 16) | (((g * 0.48 + 14) | 0) << 8) | ((r * 0.46 + 16) | 0)) >>> 0;
+    return (0xff000000 | (Math.min(255, (b * NS[4] + NS[5]) | 0) << 16) | (((g * NS[2] + NS[3]) | 0) << 8) | ((r * NS[0] + NS[1]) | 0)) >>> 0;
   }
 
   PK.E = {

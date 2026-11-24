@@ -1,14 +1,26 @@
 {
-  "name": "whole-truth-map-kolkata",
-  "version": "1.0.0",
+  "name": "whole-truth-maps",
+  "version": "2.0.0",
   "private": true,
-  "description": "Whole Truth Map by Ginhouse: a zoomable pixel-art map of Kolkata where every place has the truth (the facts) and the whole truth (what the city actually does there).",
-  "homepage": "https://ginclair.com/ginhouse",
+  "description": "Whole Truth Maps by Ginhouse: zoomable pixel-art maps of Kolkata and Bengaluru where every place has the truth (the facts) and the whole truth (what the city actually does there).",
+  "homepage": "https://whole-truth-maps.vercel.app/",
   "author": "Ginhouse (https://ginclair.com/ginhouse)",
-  "repository": { "type": "git", "url": "https://github.com/Ginclair-Team/whole-truth-map-kolkata.git" },
-  "keywords": ["kolkata", "pixel-art", "isometric", "map", "whole-truth-map", "ginhouse"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Ginclair-Team/whole-truth-maps.git"
+  },
+  "keywords": [
+    "kolkata",
+    "bengaluru",
+    "pixel-art",
+    "isometric",
+    "map",
+    "whole-truth-maps",
+    "ginhouse"
+  ],
   "scripts": {
     "start": "node tools/serve.js",
-    "render": "node tools/render.js"
+    "render:kolkata": "node tools/render.js kolkata",
+    "render:bengaluru": "node tools/render.js bengaluru"
   }
 }

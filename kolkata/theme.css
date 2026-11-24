@@ -1,0 +1,8 @@
+/* Kolkata. Truth: a blue enamel street nameplate. The whole truth: a yellow-cab stencil. */
+:root {
+  --official: #1d4f91; --paper: #f4f2ea; --street: #f6c417; --ink: #1a1712; --accent: #c8102e; --reading: #14233a;
+  --drop-truth: #0f2c52; --drop-whole: #0c0a14;
+  --sky-truth: linear-gradient(#9cc4dd 0%, #f0c9a0 55%, #eeb98a 100%);
+  --sky-whole: linear-gradient(#141030 0%, #2b2050 60%, #4a2c5a 100%);
+  --local: "Noto Sans Bengali", "Nirmala UI", "Vrinda", "Shonar Bangla", sans-serif;
+}

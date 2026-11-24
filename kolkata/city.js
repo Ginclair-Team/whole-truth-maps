@@ -1,4 +1,4 @@
-/* Whole Truth Map - the procedural city. Everything static is drawn here through the PK.E rasteriser.
+/* Whole Truth Maps: Kolkata - the procedural city. Everything static is drawn here through the PK.E rasteriser.
    build() runs two identical deterministic passes: a dry pass (ground paint + cast shadows),
    E.renderGround(), then the real pass (all pixels). */
 (function (root) {

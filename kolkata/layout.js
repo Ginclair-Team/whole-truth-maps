@@ -1,4 +1,4 @@
-/* Whole Truth Map — shared world layout. Single source of truth for where the river, roads,
+/* Whole Truth Maps: Kolkata — shared world layout. Single source of truth for where the river, roads,
    bridges and elevated tracks are, used by city.js (static art) and anim.js (moving sprites).
    Cells: i runs west→east (0..120), j runs north→south (0..96). District (row r, col c) spans
    i in [24(c-1), 24c), j in [24(r-1), 24r). */

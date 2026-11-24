@@ -1,4 +1,4 @@
-/* Whole Truth Map — places and copy.
+/* Whole Truth Maps: Kolkata — places and copy.
    truth  = the checkable part (dates, names, numbers). Keep it verifiable.
    whole  = the lived part: what people do there, what is changing, how under-25s talk about it. Editorial voice.
    at     = [i, j] cell on the map, z = pin height in px above ground.
@@ -9,6 +9,7 @@
   const N = 'North Kolkata', H = 'Heritage core', M = 'Maidan and central', S = 'South Kolkata', E = 'East';
   const m = (a, b, c) => [['Nostalgia', a], ['Chaos', b], ['Reel-worthy', c]];
 
+  PK.areas = [N, H, M, S, E];
   PK.places = [
     {
       id: 'howrah-bridge', name: 'Howrah Bridge', bn: 'রবীন্দ্র সেতু', area: H, at: [18, 36], z: 46, zoom: 3.2,

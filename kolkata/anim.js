@@ -1,4 +1,4 @@
-/* Whole Truth Map — the moving layer.
+/* Whole Truth Maps: Kolkata — the moving layer.
    Sprites are drawn with the same iso primitives as the city, depth-tested against the static
    depth buffer so a tram really does pass behind a building. Only dirty 32px tiles are repainted.
 

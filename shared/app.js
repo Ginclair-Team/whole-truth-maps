@@ -1,4 +1,4 @@
-/* Whole Truth Map: application plumbing (boot, camera, pins, card, menu, hash).
+/* Whole Truth Maps: application plumbing, shared by every city (boot, camera, pins, card, menu, hash).
    Plain script, shared global PK. Works from file://. */
 (function () {
   'use strict';
@@ -10,7 +10,8 @@
   const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
   const easeIO = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
   const MAXS = 8;
-  const AREAS = ['North Kolkata', 'Heritage core', 'Maidan and central', 'South Kolkata', 'East'];
+  const AREAS = PK.areas || [];
+  const CITY = PK.city_cfg || { id: "", lang: "", intro: [60, 48] };
   const MODE_LINES = { truth: 'The facts. Dates, names, numbers.', whole: 'What the guidebook leaves out.' };
 
   const stage = $('stage'), world = $('world');
@@ -485,9 +486,20 @@
     try { if (PK.anim && PK.anim.setMode) PK.anim.setMode(m); } catch (e) { /* ignore */ }
     drawMini();
     const ml = $('mode-line'); if (ml) ml.textContent = MODE_LINES[m];
+    syncTabs();
     if (!(opts && opts.noHash)) { clearTimeout(hashTimer); writeHash(); }
   }
   document.querySelectorAll('.mode-btn').forEach((b) => b.addEventListener('click', () => setMode(b.dataset.mode)));
+
+  /* ---------- city tabs ---------- */
+  // Switching city keeps the reading you are on, so dusk in Kolkata opens as dusk in Bengaluru.
+  function syncTabs() {
+    document.querySelectorAll('.city-tab').forEach((a) => {
+      const base = a.dataset.href || (a.dataset.href = a.getAttribute('href'));
+      a.href = base + (location.protocol === 'file:' ? 'index.html' : '') + (mode === 'whole' ? '#m=whole' : '');
+    });
+  }
+  try { localStorage.setItem('wtm-city', CITY.id); } catch (e) { /* ignore */ }
 
   /* ---------- menu ---------- */
   function buildMenu() {
@@ -503,7 +515,7 @@
       list.forEach((p) => {
         const li = document.createElement('li'), b = document.createElement('button');
         b.type = 'button'; b.dataset.id = p.id; b.appendChild(document.createTextNode(p.name));
-        if (p.bn) { const s = document.createElement('span'); s.lang = 'bn'; s.textContent = p.bn; b.appendChild(s); }
+        if (p.bn) { const s = document.createElement('span'); s.lang = CITY.lang; s.textContent = p.bn; b.appendChild(s); }
         li.dataset.q = [p.name, p.bn, p.keywords, p.area].join(' ').toLowerCase();
         li.appendChild(b); ul.appendChild(li);
       });
@@ -624,7 +636,7 @@
   function parseHash() {
     const h = location.hash.replace(/^#/, '');
     if (!h) return null;
-    const mm = /[?&]m=(truth|whole)/.exec(h);
+    const mm = /(?:^|[?&])m=(truth|whole)/.exec(h);
     const m = mm ? mm[1] : null;
     if (h.indexOf('/place/') === 0) {
       let id = h.slice(7).split('?')[0];
@@ -636,6 +648,7 @@
       h.split('&').forEach((kv) => { const i = kv.indexOf('='); if (i > 0) o[kv.slice(0, i)] = kv.slice(i + 1); });
       const x = parseFloat(o.x), y = parseFloat(o.y), z = parseFloat(o.z);
       if (isFinite(x) && isFinite(y) && isFinite(z)) return { x: x, y: y, z: z, m: m };
+      if (m) return { m: m, only: true };
     }
     return null;
   }
@@ -646,9 +659,10 @@
       return false;
     }
     if (hv.m) setMode(hv.m, { noHash: true });
+    if (hv.only) return false;
     const ms = initial ? 0 : undefined;
     if (hv.place) {
-      if (!placeById.has(hv.place)) return false;
+      if (!placeById.has(hv.place)) return false;   // a place from the other city: stay where we are
       openPlace(hv.place, { fly: true, ms: ms });
       return true;
     }
@@ -699,7 +713,7 @@
     setProgress(1);
 
     const hv = parseHash();
-    const hadView = !!(hv && (hv.place ? placeById.has(hv.place) : true));
+    const hadView = !!(hv && !hv.only && (hv.place ? placeById.has(hv.place) : true));
     setMode(hv && hv.m ? hv.m : mode, { noHash: true });
     try { if (PK.anim && PK.anim.start) PK.anim.start(cFx, { getMode: () => mode }); } catch (e) { /* ignore */ }
     try { if (PK.anim && PK.anim.setMode) PK.anim.setMode(mode); } catch (e) { /* ignore */ }
@@ -707,7 +721,7 @@
     if (hadView) restoreHash(true);
     else if (reduced()) { flyTo(E.W / 2, E.H / 2, fitS, 0); }
     else {
-      const hx = E.sx(18, 36), hy = E.sy(18, 36, 0);
+      const hx = E.sx(CITY.intro[0], CITY.intro[1]), hy = E.sy(CITY.intro[0], CITY.intro[1], 0);
       const start = clampCam({ x: hx, y: hy, s: 3 });
       copy(cam, start); copy(target, start);
       introTimer = setTimeout(() => { if (!introCancelled) flyTo(E.W / 2, E.H / 2, fitS, 2200); }, 500);

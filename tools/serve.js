@@ -4,7 +4,8 @@ const root = path.join(__dirname, '..'), port = +process.argv[2] || 4173;
 const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.png': 'image/png', '.json': 'application/json' };
 http.createServer((req, res) => {
   let p = decodeURIComponent(req.url.split('?')[0]);
-  if (p === '/') p = '/index.html';
+  if (p.endsWith('/')) p += 'index.html';
+  else if (!path.extname(p)) { res.writeHead(308, { Location: p + '/' }); return res.end(); }
   const f = path.join(root, p);
   if (!f.startsWith(root)) { res.writeHead(403); return res.end(); }
   fs.readFile(f, (err, buf) => {
@@ -12,4 +13,4 @@ http.createServer((req, res) => {
     res.writeHead(200, { 'Content-Type': types[path.extname(f)] || 'application/octet-stream', 'Cache-Control': 'no-store' });
     res.end(buf);
   });
-}).listen(port, () => console.log('Whole Truth Map on http://localhost:' + port));
+}).listen(port, () => console.log('Whole Truth Maps on http://localhost:' + port));

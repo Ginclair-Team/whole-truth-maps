@@ -1,0 +1,24 @@
+<!doctype html>
+<!-- Share images, 1200x630. ?l=kolkata-day&r=bengaluru-night&t=Whole%20Truth%20Maps&s=...&cl=..&cr=.. ; needs tools/out/*-day.png and *-night.png rendered with "alpha". -->
+<html lang="en"><head><meta charset="utf-8"><title>og</title>
+<style>
+@font-face { font-family: "Press Start 2P"; src: url("../shared/fonts/press-start-2p.woff2"); }
+@font-face { font-family: "Jersey 15"; src: url("../shared/fonts/jersey-15.woff2"); size-adjust: 116%; }
+* { box-sizing: border-box; margin: 0; } html, body { width: 1200px; height: 630px; overflow: hidden; }
+.side { position: absolute; inset: 0; overflow: hidden; }
+.l { clip-path: inset(0 600px 0 0); } .r { clip-path: inset(0 0 0 600px); }
+.kolkata-day { background: linear-gradient(#9cc4dd, #f0c9a0 60%, #eeb98a); color: #1d4f91; --sh: #f4f2ea; }
+.kolkata-night { background: linear-gradient(#141030, #2b2050 60%, #4a2c5a); color: #f6c417; --sh: #0c0a14; }
+.bengaluru-day { background: linear-gradient(#a9cfd6, #dde9d6 60%, #f1e7c8); color: #1f5c41; --sh: #efece1; }
+.bengaluru-night { background: linear-gradient(#2a1650, #6c2f8c 48%, #dd5f9a 88%, #ffa96b); color: #ff8dbd; --sh: #1b0a30; }
+img { position: absolute; left: 0; top: 78px; width: 1200px; height: auto; image-rendering: auto; }
+h1 { position: absolute; left: 0; right: 0; top: 44px; text-align: center; font: 50px/1 "Press Start 2P"; white-space: nowrap; text-shadow: 4px 5px 0 var(--sh); }
+h2 { position: absolute; top: 122px; font: 44px/1 "Jersey 15"; }
+.l h2 { right: 630px; } .r h2 { left: 630px; }
+.seam { position: absolute; left: 597px; top: 0; width: 6px; height: 100%; background: repeating-linear-gradient(#f4f2ea 0 16px, transparent 16px 32px); }
+p { position: absolute; right: 34px; bottom: 24px; font: 28px/1 "Jersey 15"; color: #fff6df; text-shadow: 2px 3px 0 #1b0a30; }
+</style></head><body><script>
+const q = new URLSearchParams(location.search), g = (k) => q.get(k) || '';
+for (const s of ['l', 'r']) document.write('<section class="side ' + s + ' ' + g(s) + '"><img src="out/' + g(s) + '.png" alt=""><h1>' + g('t') + '</h1><h2>' + g('c' + s) + '</h2></section>');
+document.write('<div class="seam"></div><p>ginclair.com/ginhouse</p>');
+</script></body></html>

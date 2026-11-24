@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en" data-mode="truth">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Bengaluru | Whole Truth Maps by Ginhouse</title>
+<meta name="description" content="Whole Truth Maps by Ginhouse. A zoomable pixel-art map of Bengaluru where every place has the truth, the facts, and the whole truth, what the city actually does there.">
+<link rel="canonical" href="https://whole-truth-maps.vercel.app/bengaluru/">
+<meta name="author" content="Ginhouse, ginclair.com/ginhouse">
+<meta name="application-name" content="Whole Truth Maps">
+<meta property="og:site_name" content="Whole Truth Maps">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Bengaluru: the truth and the whole truth">
+<meta property="og:url" content="https://whole-truth-maps.vercel.app/bengaluru/">
+<meta property="og:image" content="https://whole-truth-maps.vercel.app/assets/og-bengaluru.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Pixel-art map of Bengaluru, half in daylight and half at dusk">
+<meta property="og:description" content="Pan around a hand-coded pixel Bengaluru. Flip the switch to hear what the guidebook leaves out. By Ginhouse.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#1f5c41">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../shared/style.css">
+<link rel="stylesheet" href="theme.css">
+<link rel="prefetch" href="../kolkata/theme.css">
+<link rel="prefetch" href="../kolkata/config.js">
+<link rel="prefetch" href="../kolkata/layout.js">
+<link rel="prefetch" href="../kolkata/data.js">
+<link rel="prefetch" href="../kolkata/city.js">
+<link rel="prefetch" href="../kolkata/anim.js">
+</head>
+<body>
+
+<main id="stage" aria-label="Pixel map of Bengaluru. Drag to pan, scroll or pinch to zoom.">
+  <div id="world">
+    <canvas id="day"></canvas>
+    <canvas id="night"></canvas>
+    <canvas id="fx"></canvas>
+  </div>
+  <div id="pins"></div>
+</main>
+
+<header id="top">
+  <div id="brandbox">
+    <a id="brand" href="#" aria-label="Whole Truth Maps, show all of Bengaluru">
+      <span class="brand-name">Whole Truth Maps</span>
+      <span class="brand-tag">by Ginhouse</span>
+    </a>
+    <nav id="cities" aria-label="Cities">
+      <a class="city-tab kolkata" href="../kolkata/">Kolkata</a>
+      <a class="city-tab bengaluru" href="../bengaluru/" aria-current="page">Bengaluru</a>
+    </nav>
+  </div>
+
+  <div id="mode" role="radiogroup" aria-label="What the map tells you">
+    <button type="button" role="radio" aria-checked="true" data-mode="truth" class="mode-btn mode-truth">The truth</button>
+    <button type="button" role="radio" aria-checked="false" data-mode="whole" class="mode-btn mode-whole">The whole truth</button>
+    <span class="mode-thumb" aria-hidden="true"></span>
+  </div>
+
+  <nav id="actions" aria-label="Map tools">
+    <button type="button" id="btn-places" aria-expanded="false" aria-controls="menu">Places</button>
+    <button type="button" id="btn-share">Share</button>
+    <button type="button" id="btn-about">About</button>
+  </nav>
+</header>
+
+<p id="mode-line" aria-live="polite"></p>
+
+<aside id="menu" hidden aria-label="Jump to a place">
+  <label class="menu-search">
+    <span class="sr">Search places</span>
+    <input id="search" type="search" placeholder="Search dosa, Silk Board, gigs…" autocomplete="off">
+  </label>
+  <div id="menu-list"></div>
+</aside>
+
+<aside id="card" hidden aria-live="polite" aria-label="About this place">
+  <div class="card-flip">
+    <section class="face face-truth" aria-label="The truth">
+      <div class="plate">
+        <p class="plate-bn" data-f="bn" lang="kn"></p>
+        <h2 class="plate-name" data-f="name"></h2>
+        <p class="plate-area" data-f="area"></p>
+      </div>
+      <p class="truth-line" data-f="truth"></p>
+      <dl class="facts" data-f="facts"></dl>
+      <button type="button" class="flip-btn to-whole">Now the whole truth</button>
+    </section>
+    <section class="face face-whole" aria-label="The whole truth">
+      <div class="stencil">
+        <h2 class="stencil-name" data-f="name"></h2>
+        <p class="stencil-sub">The whole truth</p>
+      </div>
+      <p class="recap"><span>The truth, briefly:</span> <span data-f="recap"></span></p>
+      <p class="whole-line" data-f="whole"></p>
+      <blockquote class="genz" data-f="genz"></blockquote>
+      <ul class="meters" data-f="meters" aria-label="Vibe check"></ul>
+      <ul class="tags" data-f="tags"></ul>
+      <button type="button" class="flip-btn to-truth">Back to the truth</button>
+    </section>
+  </div>
+  <div class="card-nav">
+    <button type="button" id="card-prev" aria-label="Previous place">Prev</button>
+    <button type="button" id="card-zoom">Zoom to it</button>
+    <button type="button" id="card-next" aria-label="Next place">Next</button>
+    <button type="button" id="card-close" aria-label="Close">Close</button>
+  </div>
+</aside>
+
+<div id="minimap" aria-hidden="true"><canvas id="mini"></canvas><div id="mini-vp"></div></div>
+
+<div id="zoomctl" role="group" aria-label="Zoom">
+  <button type="button" id="z-in" aria-label="Zoom in">+</button>
+  <button type="button" id="z-out" aria-label="Zoom out">−</button>
+  <button type="button" id="z-fit" aria-label="Show the whole map">Fit</button>
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<dialog id="about">
+  <h2>About Whole Truth Maps</h2>
+  <p>Every pixel here is drawn by code, not copied from anywhere. The city is squeezed so that each landmark gets a neighbourhood, so treat distances as a story and not a survey.</p>
+  <p><strong>The truth</strong> is the checkable part: dates, names, numbers. <strong>The whole truth</strong> is the lived part: what people actually do there, what is changing, and how the under-25s talk about it. That half is opinion, written with affection.</p>
+  <p>Green is the Garden City the plaques describe. Pink is the pub city at sunset, when the sky does that thing.</p>
+  <p>Inspired by Pixel Chennai (pixelchennai.com) by RC. No artwork from that project is used.</p>
+  <p class="about-by">Whole Truth Maps is made by <a id="about-handle" href="https://ginclair.com/ginhouse" target="_blank" rel="noopener">Ginhouse</a> at ginclair.com/ginhouse.</p>
+  <form method="dialog"><button>Close</button></form>
+</dialog>
+
+<div id="loader" role="status">
+  <div class="loader-box">
+    <p class="loader-name">Bengaluru</p>
+    <p class="loader-step" id="loader-step">Planting rain trees</p>
+    <div class="loader-bar"><i id="loader-fill"></i></div>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script src="../shared/engine.js"></script>
+<script src="layout.js"></script>
+<script src="data.js"></script>
+<script src="city.js"></script>
+<script src="anim.js"></script>
+<script src="../shared/app.js"></script>
+</body>
+</html>

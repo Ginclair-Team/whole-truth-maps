@@ -1,12 +1,12 @@
 <!doctype html>
-<!-- Poster source. Rendered to assets/poster.png by a headless browser at 1860x2480 (see README). -->
+<!-- Poster source. Rendered to assets/poster-kolkata.png by a headless browser at 1860x2480 (see README). -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Whole Truth Map poster</title>
+<title>Whole Truth Maps poster</title>
 <style>
-@font-face { font-family: "Press Start 2P"; src: url("../fonts/press-start-2p.woff2") format("woff2"); }
-@font-face { font-family: "Jersey 15"; font-weight: 400 700; src: url("../fonts/jersey-15.woff2"); size-adjust: 116%; }
+@font-face { font-family: "Press Start 2P"; src: url("../shared/fonts/press-start-2p.woff2") format("woff2"); }
+@font-face { font-family: "Jersey 15"; font-weight: 400 700; src: url("../shared/fonts/jersey-15.woff2"); size-adjust: 116%; }
 :root { --enamel: #1d4f91; --plate: #f4f2ea; --cab: #f6c417; --black: #1a1712; --sindoor: #c8102e; --W: 1860px; --H: 2480px; --split: 930px; }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { width: var(--W); height: var(--H); overflow: hidden; background: #000; }
@@ -18,7 +18,7 @@ body { font-family: "Jersey 15", sans-serif; -webkit-font-smoothing: none; }
 .truth { clip-path: inset(0 calc(var(--W) - var(--split)) 0 0); background: linear-gradient(#8fbbd8 0%, #cfd6c8 38%, #f0c9a0 62%, #eab384 100%); color: var(--enamel); }
 .whole { clip-path: inset(0 0 0 var(--split)); background: linear-gradient(#100c28 0%, #241a4a 40%, #46295a 70%, #5a2f58 100%); color: var(--cab); }
 
-.title { position: absolute; left: 0; right: 0; top: 196px; text-align: center; font-family: "Press Start 2P", monospace; font-size: 106px; line-height: 1; letter-spacing: 2px; white-space: nowrap; }
+.title { position: absolute; left: 0; right: 0; top: 196px; text-align: center; font-family: "Press Start 2P", monospace; font-size: 102px; line-height: 1; letter-spacing: 2px; white-space: nowrap; }
 .truth .title { text-shadow: 7px 8px 0 var(--plate); }
 .whole .title { text-shadow: 7px 8px 0 var(--black); }
 .city { position: absolute; left: 0; right: 0; top: 348px; text-align: center; font-size: 76px; font-weight: 700; line-height: 1; }
@@ -71,7 +71,7 @@ canvas { position: absolute; left: 66px; top: 590px; image-rendering: pixelated;
 <body>
 
 <section class="side truth">
-  <h1 class="title">Whole Truth Map</h1>
+  <h1 class="title">Whole Truth Maps</h1>
   <p class="city">Kolkata</p>
   <p class="claim">The truth is what the plaque says.</p>
   <canvas id="day"></canvas>
@@ -80,7 +80,7 @@ canvas { position: absolute; left: 66px; top: 590px; image-rendering: pixelated;
 </section>
 
 <section class="side whole">
-  <h1 class="title">Whole Truth Map</h1>
+  <h1 class="title">Whole Truth Maps</h1>
   <p class="city"><span lang="bn">কলকাতা</span></p>
   <p class="claim">The whole truth is what the city does there.</p>
   <canvas id="night"></canvas>
@@ -102,10 +102,11 @@ canvas { position: absolute; left: 66px; top: 590px; image-rendering: pixelated;
   <p class="genz">The ferry is the cheapest cruise in India and I will not be taking questions.</p>
 </article>
 
-<script src="../js/engine.js"></script>
-<script src="../js/layout.js"></script>
-<script src="../js/data.js"></script>
-<script src="../js/city.js"></script>
+<script src="../kolkata/config.js"></script>
+<script src="../shared/engine.js"></script>
+<script src="../kolkata/layout.js"></script>
+<script src="../kolkata/data.js"></script>
+<script src="../kolkata/city.js"></script>
 <script>
 (function () {
   const E = PK.E;

@@ -1,0 +1,132 @@
+<!doctype html>
+<!-- Poster source. Rendered to assets/poster-bengaluru.png by a headless browser at 1860x2480 (see README). -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Whole Truth Maps poster</title>
+<style>
+@font-face { font-family: "Press Start 2P"; src: url("../shared/fonts/press-start-2p.woff2") format("woff2"); }
+@font-face { font-family: "Jersey 15"; font-weight: 400 700; src: url("../shared/fonts/jersey-15.woff2"); size-adjust: 116%; }
+:root { --enamel: #1f5c41; --plate: #efece1; --cab: #ff8dbd; --black: #2a1147; --ale: #f5a623; --foam: #fff6df; --W: 1860px; --H: 2480px; --split: 930px; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: var(--W); height: var(--H); overflow: hidden; background: #000; }
+body { font-family: "Jersey 15", sans-serif; -webkit-font-smoothing: none; }
+
+/* Two full-size posters stacked; each is clipped to its own half, so everything that crosses
+   the centre line (title, map) changes voice exactly at the split. */
+.side { position: absolute; inset: 0; overflow: hidden; }
+.truth { clip-path: inset(0 calc(var(--W) - var(--split)) 0 0); background: linear-gradient(#9fcad3 0%, #cfe3d3 40%, #e9ecd2 68%, #f3e3bd 100%); color: var(--enamel); }
+.whole { clip-path: inset(0 0 0 var(--split)); background: linear-gradient(#25124a 0%, #57277f 34%, #b04a97 66%, #f0718f 86%, #ffa96b 100%); color: var(--cab); }
+
+.title { position: absolute; left: 0; right: 0; top: 196px; text-align: center; font-family: "Press Start 2P", monospace; font-size: 102px; line-height: 1; letter-spacing: 2px; white-space: nowrap; }
+.truth .title { text-shadow: 7px 8px 0 var(--plate); }
+.whole .title { text-shadow: 7px 8px 0 var(--black); }
+.city { position: absolute; left: 0; right: 0; top: 348px; text-align: center; font-size: 76px; font-weight: 700; line-height: 1; }
+.city span { font-family: "Nirmala UI", "Noto Sans Kannada", sans-serif; font-size: 70px; margin-left: 30px; }
+
+.claim { position: absolute; top: 486px; width: 640px; font-size: 50px; line-height: 1.16; font-weight: 700; }
+.truth .claim { right: calc(var(--W) - var(--split) + 54px); text-align: right; color: #16281f; }
+.whole .city { color: #ffc766; }
+.whole .claim { left: calc(var(--split) + 54px); color: var(--plate); }
+
+canvas { position: absolute; left: 66px; top: 590px; image-rendering: pixelated; }
+
+/* the seam */
+.seam { position: absolute; left: calc(var(--split) - 4px); top: 0; width: 8px; height: 100%; background: repeating-linear-gradient(var(--plate) 0 24px, transparent 24px 48px); opacity: .9; }
+
+/* the two sample cards */
+.card { position: absolute; top: 1716px; width: 700px; }
+.nameplate { left: 170px; background: var(--plate); color: #16281f; border: 6px solid var(--enamel); border-radius: 12px 12px 0 0; box-shadow: 12px 14px 0 #0f3324; padding-bottom: 34px; }
+.nameplate .plate { margin: 14px; padding: 26px 24px 24px; background: var(--enamel); color: var(--plate); border-radius: 9px; text-align: center; box-shadow: inset 0 0 0 5px var(--enamel), inset 0 0 0 9px var(--plate); }
+.nameplate .bn { font-family: "Nirmala UI", "Noto Sans Kannada", sans-serif; font-size: 58px; font-weight: 700; line-height: 1.25; }
+.nameplate h2 { font-size: 38px; line-height: 1.1; }
+.nameplate p.line { padding: 20px 34px 0; font-size: 35px; line-height: 1.32; }
+.facts { display: flex; margin: 26px 34px 0; border-top: 4px solid var(--enamel); padding-top: 16px; }
+.facts div { flex: 1; }
+.facts b { display: block; font-size: 46px; line-height: 1; color: var(--enamel); white-space: nowrap; }
+.facts div:nth-child(2) { flex: 1.25; }
+.facts span { font-size: 27px; }
+
+.cabdoor { left: 990px; background: var(--cab); color: var(--black); border: 6px solid var(--black); box-shadow: 12px 14px 0 #1b0a30; padding-bottom: 34px; }
+.cabdoor .stencil { padding: 78px 34px 24px; border-bottom: 10px solid var(--black); background:
+  linear-gradient(var(--foam) 0 0) 0 0 / 100% 26px no-repeat,
+  repeating-linear-gradient(90deg, var(--foam) 0 62px, transparent 62px 88px) 0 26px / 100% 13px no-repeat,
+  repeating-linear-gradient(90deg, transparent 0 13px, var(--foam) 13px 39px, transparent 39px 176px) 0 39px / 100% 13px no-repeat,
+  var(--ale); }
+.cabdoor h2 { font-size: 50px; line-height: 1.05; }
+.cabdoor .sub { font-family: "Press Start 2P", monospace; font-size: 19px; margin-top: 16px; }
+.cabdoor p.line { padding: 22px 34px 0; font-size: 35px; line-height: 1.32; }
+.genz { margin: 28px 34px 0; padding: 20px 26px 22px; background: var(--black); color: #ffc766; font-size: 36px; font-weight: 700; line-height: 1.26; }
+
+.label { position: absolute; top: 1630px; font-family: "Press Start 2P", monospace; font-size: 26px; }
+.truth .label { left: 170px; color: var(--enamel); }
+.whole .label { left: 990px; color: var(--cab); }
+
+.foot { position: absolute; bottom: 74px; font-size: 38px; line-height: 1.25; font-weight: 700; }
+.truth .foot { left: 170px; color: #16281f; }
+.whole .foot { right: 170px; text-align: right; color: var(--plate); }
+.foot small { display: block; font-size: 30px; font-weight: 400; opacity: .85; }
+/* city name: English ends at the seam, Kannada begins after it */
+.truth .city { right: calc(var(--W) - var(--split) + 40px); left: auto; text-align: right; }
+.whole .city { left: calc(var(--split) + 40px); right: auto; text-align: left; }
+.city span { margin-left: 0; }
+.truth .claim, .whole .claim { text-wrap: balance; }
+.whole .label { color: var(--foam); text-shadow: 3px 4px 0 var(--black); }
+.whole .foot { color: var(--black); }
+.foot small { opacity: 1; }
+</style>
+</head>
+<body>
+
+<section class="side truth">
+  <h1 class="title">Whole Truth Maps</h1>
+  <p class="city">Bengaluru</p>
+  <p class="claim">The truth is what the plaque says.</p>
+  <canvas id="day"></canvas>
+  <p class="label">The truth</p>
+  <div class="foot">One city, two readings<small>A pixel map drawn entirely in code</small></div>
+</section>
+
+<section class="side whole">
+  <h1 class="title">Whole Truth Maps</h1>
+  <p class="city"><span lang="kn">ಬೆಂಗಳೂರು</span></p>
+  <p class="claim">The whole truth is what the city does there.</p>
+  <canvas id="night"></canvas>
+  <p class="label">The whole truth</p>
+  <div class="foot">by Ginhouse<small>ginclair.com/ginhouse</small></div>
+</section>
+
+<div class="seam"></div>
+
+<article class="card nameplate">
+  <div class="plate"><p class="bn" lang="kn">ಸಿಲ್ಕ್ ಬೋರ್ಡ್</p><h2>Silk Board Junction</h2></div>
+  <p class="line">A junction named for the Central Silk Board office. The metro arrived in 2025 and its double-decker flyover fully opened in 2026.</p>
+  <div class="facts"><div><b>2025</b><span>Yellow Line</span></div><div><b>2026</b><span>double-decker, finally</span></div></div>
+</article>
+
+<article class="card cabdoor">
+  <div class="stencil"><h2>Silk Board Junction</h2><p class="sub">The whole truth</p></div>
+  <p class="line">Not a place so much as a duration. Books have been finished here, calls taken, relationships reviewed.</p>
+  <p class="genz">I have aged here.</p>
+</article>
+
+<script src="../bengaluru/config.js"></script>
+<script src="../shared/engine.js"></script>
+<script src="../bengaluru/layout.js"></script>
+<script src="../bengaluru/data.js"></script>
+<script src="../bengaluru/city.js"></script>
+<script>
+(function () {
+  const E = PK.E;
+  PK.city.build();
+  const blit = (id, buf) => {
+    const c = document.getElementById(id); c.width = E.W; c.height = E.H;
+    c.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(buf.buffer.slice(0)), E.W, E.H), 0, 0);
+  };
+  blit('day', E.col);
+  blit('night', E.makeNight(E.finalizeLights()));
+  document.title = 'ready';
+})();
+</script>
+</body>
+</html>
