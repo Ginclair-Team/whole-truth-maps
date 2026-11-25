@@ -70,4 +70,4 @@ Copy a city folder, change its files, add its tab to each city's `index.html`, i
 
 Concept and production: Ginhouse, [ginclair.com/ginhouse](https://ginclair.com/ginhouse).
 
-Inspired by Pixel Chennai (pixelchennai.com) by RC. No artwork from that project is used. Fonts: Jersey 15 and Press Start 2P (SIL Open Font License), bundled in `shared/fonts/`.
+Fonts: Jersey 15 and Press Start 2P (SIL Open Font License), bundled in `shared/fonts/`.
